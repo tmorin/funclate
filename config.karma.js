@@ -1,55 +1,47 @@
-'use strict';
+const path = require('path');
+const webpack = require('webpack');
 
-const webpackDevConfig = require('./config.webpack');
+const webpackConfig = {
+    module: {
+        rules: [{
+            test: /\.js$/,
+            loader: 'babel-loader',
+            exclude: /node_modules/
+        }, {
+            test: /src\/.+\.js$/,
+            exclude: /(node_modules|\.spec\.ts$)/,
+            loader: 'istanbul-instrumenter-loader',
+            enforce: 'post'
+        }]
+    },
+    plugins: [
+        new webpack.SourceMapDevToolPlugin({
+            filename: null,
+            test: /\.(js)($|\?)/i
+        })
+    ]
+};
 
-module.exports = (config) => {
+module.exports = function (config) {
+    config.set({
 
-    const karmaConfig = {
+        basePath: './',
 
-        basePath: '',
+        browsers: ['PhantomJS'],
 
         frameworks: ['mocha', 'sinon-chai'],
+
+        singleRun: true,
+
+        reporters: ['progress', 'coverage-istanbul'],
 
         files: [
             'test/**/*.spec.js'
         ],
 
-        exclude: [],
-
         preprocessors: {
             'test/**/*.spec.js': ['webpack', 'sourcemap']
         },
-
-        webpack: Object.assign({}, webpackDevConfig, {
-            devtool: 'inline-source-map'
-        }),
-
-        webpackMiddleware: {
-            noInfo: true
-        },
-
-        reporters: ['progress'],
-
-        port: 9877,
-
-        colors: true,
-
-        autoWatch: false,
-
-        browsers: ['PhantomJS'],
-
-        customLaunchers: {
-            IE9_EMULATE: {
-                base: 'IE',
-                'x-ua-compatible': 'IE=EmulateIE9'
-            },
-            IE10_EMULATE: {
-                base: 'IE',
-                'x-ua-compatible': 'IE=EmulateIE10'
-            }
-        },
-
-        singleRun: true,
 
         client: {
             mocha: {
@@ -57,30 +49,19 @@ module.exports = (config) => {
             }
         },
 
-        logLevel: config.LOG_INFO
+        logLevel: config.LOG_INFO,
 
-    };
+        webpack: webpackConfig,
 
+        webpackMiddleware: {
+            stats: 'errors-only',
+            noInfo: true
+        },
 
-    if (process.env.COVERAGE) {
-        console.log('---- CAPTURE COVERAGE ----');
-        karmaConfig.webpack.module.rules[0] = {
-            test: /\.js?$/,
-            exclude: /node_modules|\/example\/|\.spec.js$/,
-            loader: 'isparta-loader'
-        };
-        karmaConfig.webpack.module.rules.push({
-            test: /\/example\/|\.spec.js?$/,
-            exclude: /node_modules/,
-            loader: 'babel-loader'
-        });
-        karmaConfig.reporters.push('coverage');
-        karmaConfig.coverageReporter = {
-            reporters: [
-                {type: 'lcov', dir: 'coverage/', subdir: '.'}
-            ]
-        };
-    }
+        coverageIstanbulReporter: {
+            reports: ['lcov'],
+            dir: path.join(__dirname, 'coverage')
+        }
 
-    config.set(karmaConfig);
+    });
 };
