@@ -2,13 +2,13 @@
  * The current root element, i.e. where the starting point of the updateElement function.
  * @type {HTMLElement}
  */
-var rootElement = null;
+let rootElement = null;
 
 /**
  * The current parent element of the processed instruction.
  * @type {HTMLElement}
  */
-var parentElement = null;
+let parentElement = null;
 
 /**
  * @typedef Context

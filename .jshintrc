@@ -1,4 +1,7 @@
 {
-  "esnext": true,
-  "evil": true
+    "node": true,
+    "browser": true,
+    "curly": true,
+    "quotmark": "single",
+    "esversion": 6
 }
