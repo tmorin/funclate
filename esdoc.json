@@ -1,5 +1,23 @@
 {
   "source": "./src",
   "destination": "./esdoc",
-  "title": "funclate"
+  "title": "funclate",
+  "index": "./doc/README.md",
+  "test": {
+    "type": "mocha",
+    "source": "./test"
+  },
+  "manual": {
+    "globalIndex": true,
+    "index": "./manual/README.md",
+    "installation": [
+      "./manual/installation.md"
+    ],
+    "usage": [
+      "./manual/usage.md"
+    ],
+    "changelog": [
+      "./CHANGELOG.md"
+    ]
+  }
 }
