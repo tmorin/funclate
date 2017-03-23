@@ -27,7 +27,7 @@ module.exports = function (config) {
 
         basePath: './',
 
-        browsers: ['PhantomJS'],
+        browsers: ['PhantomJS'/*, 'Firefox'*/],
 
         frameworks: ['mocha', 'sinon-chai'],
 
@@ -62,6 +62,5 @@ module.exports = function (config) {
             reports: ['lcov'],
             dir: path.join(__dirname, 'coverage')
         }
-
     });
 };

@@ -35,29 +35,12 @@ function restoreCtx(ctx) {
 }
 
 /**
- * Try to find a light DOM node
- * @param {!HTMLElement} el the custom element
- * @returns {HTMLElement} the light DOM node if found otherwise it's the given HTML Element
+ * Remove the un-visited nodes.
  */
-function findContentNode(el) {
-    let element = el.cebContentNode ? el.cebContentNode : el;
-    if (element === el) {
-        return el;
+function cleanRemainingNodes() {
+    while (parentElement.childNodes.length > lastIndex()) {
+        parentElement.removeChild(parentElement.lastChild);
     }
-    return findContentNode(element);
-}
-
-/**
- * Remove and return the children of the light DOM node.
- * @param {!HTMLElement} el the custom element
- * @returns {DocumentFragment} the light DOM fragment
- */
-function cleanOldContentNode(el) {
-    let oldContentNode = el.lightDOM, lightFrag = document.createDocumentFragment();
-    while (oldContentNode.childNodes.length > 0) {
-        lightFrag.appendChild(oldContentNode.removeChild(oldContentNode.childNodes[0]));
-    }
-    return lightFrag;
 }
 
 /**
@@ -67,46 +50,57 @@ function cleanOldContentNode(el) {
  */
 export function updateElement(root, render) {
     const ctx = getCtx();
+
     rootElement = root;
     parentElement = root;
+
     let lightFrag = null;
-    if (!root.cebContentNode) {
-        lightFrag = cleanOldContentNode(root);
+    if (!root.__visited__) {
+        lightFrag = document.createDocumentFragment();
+        while (root.childNodes.length > 0) {
+            lightFrag.appendChild(root.removeChild(root.firstChild));
+        }
     }
+
     render(root);
+
+    cleanRemainingNodes();
     clearIndex();
-    if (lightFrag && root.cebContentNode) {
-        root.cebContentNode.appendChild(lightFrag);
+
+    root.__visited__ = true;
+    if (lightFrag && root.__content__) {
+        root.__content__.appendChild(lightFrag);
     }
+
     restoreCtx(ctx);
 }
 
 /**
- * Get and increment the cebIndex property of the current parent.
+ * Get and increment the fcIndex property of the current parent.
  * @return {number} the index
  */
 function nextIndex() {
-    if (!parentElement.cebIndex) {
-        parentElement.cebIndex = 0;
+    if (!parentElement.fcIndex) {
+        parentElement.fcIndex = 0;
     }
-    let index = parentElement.cebIndex;
-    parentElement.cebIndex = parentElement.cebIndex + 1;
+    let index = parentElement.fcIndex;
+    parentElement.fcIndex = parentElement.fcIndex + 1;
     return index;
 }
 
 /**
- * Get cebIndex property of the current parent.
+ * Get fcIndex property of the current parent.
  * @return {number} the index
  */
 function lastIndex() {
-    return parentElement.cebIndex;
+    return parentElement.fcIndex;
 }
 
 /**
- * Clear the cebIndex property of the current parent.
+ * Clear the fcIndex property of the current parent.
  */
 function clearIndex() {
-    delete parentElement.cebIndex;
+    delete parentElement.fcIndex;
 }
 
 /**
@@ -114,14 +108,21 @@ function clearIndex() {
  * @param {!string} value the node's value
  * @param {!number} nodeType the node's type
  * @param {!function(value: string): Node} factory the factory creating the node when necessary
+ * @param {Node} found which should be the current node
  * @return {Node} the handled node
  */
-function handleNode(value, nodeType, factory) {
+function handleNode(value, nodeType, factory, found) {
     const index = nextIndex();
     let current = parentElement.childNodes.item(index);
-    if (current) {
+    if (found) {
+        if (current) {
+            current = parentElement.insertBefore(found, current);
+        } else {
+            current = parentElement.appendChild(factory(value));
+        }
+    } else if (current) {
         if (current.nodeType !== nodeType) {
-            parentElement.replaceChild(factory(value), current);
+            parentElement.insertBefore(factory(value), current);
         } else {
             current.nodeValue = value;
         }
@@ -141,10 +142,11 @@ function handleNode(value, nodeType, factory) {
 /**
  * Create an element
  * @param name the name
- * @param is the value of the attribute is
+ * @param attrs the attributes
  * @return {Element} the element
  */
-function createElement(name, is) {
+function createElement(name, attrs) {
+    const is = attrs && attrs.is;
     return is ? document.createElement(name, is) : document.createElement(name);
 }
 
@@ -154,35 +156,49 @@ function createElement(name, is) {
  * @param {Object.<string, string|number|boolean>} attrs the attributes of the element
  * @param {Object.<string, *>}  props the properties of the element
  * @param {ElementOptions} opts the options driving the creation of the element
+ * @param {HtmlElement} found which should be the current element
  * @return {Element} the handled element
  */
-function handleElement(name, attrs = {}, props = {}, opts = {}) {
+function handleElement(name, attrs, props, opts, found) {
     const index = nextIndex();
     let current = parentElement.childNodes.item(index);
 
-    if (current && current.nodeName.toLowerCase() !== name.toLowerCase()) {
-        let nodeToReplace = current;
-        current = createElement(name, attrs.is);
-        parentElement.replaceChild(
-            current,
-            nodeToReplace
-        );
-    } else if (!current) {
+    if (found) {
+        if (current) {
+            current = parentElement.insertBefore(found, current);
+        } else {
+            current = parentElement.appendChild(found);
+        }
+    } else if (current) {
+        if (name.toLowerCase() !== (current.tagName || '').toLowerCase()) {
+            current = parentElement.insertBefore(
+                createElement(name, attrs),
+                current
+            );
+        }
+    } else {
         current = parentElement.appendChild(
-            createElement(name, attrs.is)
+            createElement(name, attrs)
         );
     }
 
-    console.log('handleElement', name, current, attrs);
-    Object.keys(attrs).forEach(k => current.setAttribute(k, attrs[k]));
-    Object.keys(props).forEach(k => current[k] = props[k]);
-
-
-    if (opts.content) {
-        rootElement.cebContentNode = current;
+    if (attrs) {
+        Object.keys(attrs).forEach(k => current.setAttribute(k, attrs[k]));
     }
 
-    if (!opts.voidElement) {
+    if (props) {
+        Object.keys(props).forEach(k => current[k] = props[k]);
+    }
+
+    if (opts && opts.key) {
+        current.dataset.fcKey = opts.key;
+    }
+
+    if (opts && opts.content) {
+        rootElement.__content__ = current;
+    }
+
+    if (!(opts && opts.voidElement)) {
         parentElement = current;
     }
 
@@ -197,7 +213,7 @@ function handleElement(name, attrs = {}, props = {}, opts = {}) {
  * @param {ElementOptions} opts the options driving the creation of the element
  * @return {Element} the element
  */
-export function fcOpenElement(name, attrs = {}, props = {}, opts = {}) {
+export function fcOpenElement(name, attrs, props, opts) {
     return handleElement(name, attrs, props, opts);
 }
 
@@ -205,14 +221,7 @@ export function fcOpenElement(name, attrs = {}, props = {}, opts = {}) {
  * Close the current element.
  */
 export function fcCloseElement() {
-    const max = parentElement.childNodes.length;
-    for (let i = lastIndex(); i < max; i++) {
-        parentElement.removeChild(
-            parentElement.childNodes.item(
-                parentElement.childNodes.length - 1
-            )
-        );
-    }
+    cleanRemainingNodes();
     clearIndex();
     parentElement = parentElement.parentElement;
 }
@@ -225,16 +234,17 @@ export function fcCloseElement() {
  * @param {ElementOptions} opts the options driving the creation of the element
  * @return {Element} the element
  */
-export function fcOpenVoidElement(name, attrs = {}, props = {}, opts = {}) {
-    return handleElement(name, attrs, props, assign(opts, {voidElement: true}));
+export function fcOpenVoidElement(name, attrs, props, opts = {}) {
+    opts.voidElement = true;
+    return handleElement(name, attrs, props, opts);
 }
 
 /**
- * To add a <code>ceb-content</code> node.
+ * To add a <code>__content__</code> node.
  * This node will be used to locate the entry of the light DOM structure.
  */
 export function fcContent() {
-    rootElement.cebContentNode = handleElement('ceb-content', {}, {}, {voidElement: true});
+    rootElement.__content__ = handleElement('fc-content', null, null, {voidElement: true}, rootElement.__content__);
 }
 
 /**
