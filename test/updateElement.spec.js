@@ -1,17 +1,17 @@
 /*jshint -W030 */
-import {spy} from "sinon";
+import {spy} from 'sinon';
 import {
-    fcCloseElement,
-    fcComment,
-    fcContent,
-    fcOpenElement,
-    fcOpenVoidElement,
-    fcText,
+    closeElement,
+    comment,
+    content,
+    openElement,
+    openVoidElement,
+    text,
     updateElement
-} from "../src/funclate";
+} from '../src/funclate';
 
 
-describe('ceb.funclate()', () => {
+describe('updateElement()', () => {
     let sandbox;
     beforeEach(() => {
         if (sandbox) {
@@ -26,13 +26,13 @@ describe('ceb.funclate()', () => {
 
     it('should render a very simple template', () => {
         const render = () => {
-            fcText('before');
-            fcOpenElement('strong', {class: 'foo'}, {key1: 'value1'});
-            fcComment('the tag name');
-            fcText('foo');
-            fcCloseElement();
-            fcOpenVoidElement('input', {type: 'number'});
-            fcText('after');
+            text('before');
+            openElement('strong', {class: 'foo'}, {key1: 'value1'});
+            comment('the tag name');
+            text('foo');
+            closeElement();
+            openVoidElement('input', {type: 'number'});
+            text('after');
         };
         const el = sandbox.appendChild(document.createElement('div'));
         updateElement(el, render);
@@ -42,34 +42,34 @@ describe('ceb.funclate()', () => {
 
     it('should render a simple template', () => {
         const render = el => {
-            fcOpenElement('p');
-            fcText('before');
+            openElement('p');
+            text('before');
 
             if (el.foo) {
-                fcOpenElement('strong');
-                fcComment('the tag name');
+                openElement('strong');
+                comment('the tag name');
                 if (el.bar) {
-                    fcText(el.bar);
+                    text(el.bar);
                 }
-                fcCloseElement();
+                closeElement();
             }
 
-            fcText('between');
+            text('between');
 
             if (el.bar) {
-                fcOpenElement('em');
+                openElement('em');
                 if (el.foo) {
-                    fcText(el.foo);
+                    text(el.foo);
                 }
-                fcCloseElement();
+                closeElement();
             }
 
-            fcText('after');
+            text('after');
 
             if (!el.foo) {
-                fcText('!');
+                text('!');
             }
-            fcCloseElement();
+            closeElement();
         };
         const el = sandbox.appendChild(document.createElement('div'));
 
@@ -106,14 +106,14 @@ describe('ceb.funclate()', () => {
 
     it('should manage light dom with fc-content element', () => {
         const render = el => {
-            fcOpenElement('p');
-            fcText('before');
+            openElement('p');
+            text('before');
             if (el.foo) {
-                fcText(el.foo);
+                text(el.foo);
             }
-            fcContent();
-            fcText('after');
-            fcCloseElement();
+            content();
+            text('after');
+            closeElement();
         };
         const el = sandbox.appendChild(document.createElement('div'));
 
@@ -129,15 +129,15 @@ describe('ceb.funclate()', () => {
 
     it('should manage light dom with content option', () => {
         const render = el => {
-            fcOpenElement('p');
-            fcText('before');
+            openElement('p');
+            text('before');
             if (el.foo) {
-                fcText(el.foo);
+                text(el.foo);
             }
-            fcOpenElement('div', {}, {}, {content: true});
-            fcCloseElement();
-            fcText('after');
-            fcCloseElement();
+            openElement('div', {}, {}, {content: true});
+            closeElement();
+            text('after');
+            closeElement();
         };
         const el = sandbox.appendChild(document.createElement('div'));
 
@@ -153,20 +153,20 @@ describe('ceb.funclate()', () => {
 
     it('should manage sub light dom', () => {
         const render1 = el => {
-            fcText('before1');
+            text('before1');
             if (el.foo) {
-                fcText('foo');
+                text('foo');
             }
-            fcContent();
-            fcText('after1');
+            content();
+            text('after1');
         };
         const render2 = el => {
-            fcText('before2');
-            fcContent();
+            text('before2');
+            content();
             if (el.bar) {
-                fcText('bar');
+                text('bar');
             }
-            fcText('after2');
+            text('after2');
         };
         const el = sandbox.appendChild(document.createElement('div'));
         const div = el.appendChild(document.createElement('div'));
@@ -198,8 +198,8 @@ describe('ceb.funclate()', () => {
     it('should create custom element', () => {
         let sypiedCreateElement = spy(document, 'createElement');
         const render = () => {
-            fcOpenElement('button', {is: 'my-button'});
-            fcCloseElement();
+            openElement('button', {is: 'my-button'});
+            closeElement();
         };
         const el = sandbox.appendChild(document.createElement('div'));
         updateElement(el, render);
@@ -210,13 +210,24 @@ describe('ceb.funclate()', () => {
 
     it('should create void element', () => {
         const render = () => {
-            fcOpenVoidElement('input', {type: 'text'}, {value: 'foo'}, {});
-            fcOpenVoidElement('br');
+            openVoidElement('input', {type: 'text'}, {value: 'foo'}, {});
+            openVoidElement('br');
         };
         const el = sandbox.appendChild(document.createElement('div'));
         updateElement(el, render);
         expect(el.innerHTML, '1').to.be.eq(`<input type="text"><br>`);
         expect(el.querySelector('input').value, '1').to.be.eq('foo');
+    });
+
+    it('should create empty node', () => {
+        const render = () => {
+            text();
+            comment();
+        };
+        const el = sandbox.appendChild(document.createElement('div'));
+        updateElement(el, render);
+        expect(el.innerHTML, '1').to.be.eq(`<!---->`);
+        expect(el.childNodes.length, '1').to.be.eq(2);
     });
 
     xit('should manage identified nodes', () => {
@@ -227,14 +238,14 @@ describe('ceb.funclate()', () => {
 
         const render = () => {
             items.forEach(item => {
-                fcOpenElement('li', null, null, {key: item.id});
-                fcText(item.id + ': ');
+                openElement('li', null, null, {key: item.id});
+                text(item.id + ': ');
                 if (item.value % 2) {
-                    fcText('even');
+                    text('even');
                 } else {
-                    fcText('odd');
+                    text('odd');
                 }
-                fcCloseElement();
+                closeElement();
             });
         };
         const el = sandbox.appendChild(document.createElement('div'));
