@@ -27,9 +27,10 @@ module.exports = function (config) {
 
         basePath: './',
 
-        browsers: ['PhantomJS'/*, 'Firefox'*/],
+        browsers: ['PhantomJS'],
+        // browsers: ['Firefox'],
 
-        frameworks: ['mocha', 'sinon-chai'],
+        frameworks: ['mocha'],
 
         singleRun: true,
 

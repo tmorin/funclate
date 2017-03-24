@@ -1,4 +1,6 @@
 /*jshint -W030 */
+import chai from 'chai';
+import sinonChai from 'sinon-chai';
 import {spy} from 'sinon';
 import {
     closeElement,
@@ -10,6 +12,8 @@ import {
     updateElement
 } from '../src/funclate';
 
+const expect = chai.expect;
+chai.use(sinonChai);
 
 describe('updateElement()', () => {
     let sandbox;
