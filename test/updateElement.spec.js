@@ -1,11 +1,6 @@
 /*jshint -W030 */
-import chai from "chai";
-import sinonChai from "sinon-chai";
 import {spy} from "sinon";
-import {closeElement, comment, content, openElement, openVoidElement, text, updateElement} from "../src/funclate";
-
-const expect = chai.expect;
-chai.use(sinonChai);
+import {closeElement, comment, content, openElement, text, updateElement, voidElement} from "../src/funclate";
 
 describe('updateElement()', () => {
     let sandbox;
@@ -23,11 +18,11 @@ describe('updateElement()', () => {
     it('should render a very simple template', () => {
         const render = () => {
             text('before');
-            openElement('strong', {class: 'foo'}, {key1: 'value1'});
+            openElement('strong', ['class', 'foo'], ['key1', 'value1']);
             comment('the tag name');
             text('foo');
             closeElement();
-            openVoidElement('input', {type: 'number'});
+            voidElement('input', ['type', 'number']);
             text('after');
         };
         const el = sandbox.appendChild(document.createElement('div'));
@@ -130,7 +125,7 @@ describe('updateElement()', () => {
             if (el.foo) {
                 text(el.foo);
             }
-            openElement('div', {}, {}, {content: true});
+            openElement('div', null, null, ['content', true]);
             closeElement();
             text('after');
             closeElement();
@@ -194,7 +189,7 @@ describe('updateElement()', () => {
     it('should create custom element', () => {
         let sypiedCreateElement = spy(document, 'createElement');
         const render = () => {
-            openElement('button', {is: 'my-button'});
+            openElement('button', ['is', 'my-button']);
             closeElement();
         };
         const el = sandbox.appendChild(document.createElement('div'));
@@ -206,8 +201,8 @@ describe('updateElement()', () => {
 
     it('should create void element', () => {
         const render = () => {
-            openVoidElement('input', {type: 'text'}, {value: 'foo'}, {});
-            openVoidElement('br');
+            voidElement('input', ['type', 'text'], ['value', 'foo']);
+            voidElement('br');
         };
         const el = sandbox.appendChild(document.createElement('div'));
         updateElement(el, render);
@@ -234,7 +229,7 @@ describe('updateElement()', () => {
 
         const render = () => {
             items.forEach(item => {
-                openElement('li', null, null, {key: item.id});
+                openElement('li', null, null, ['key', item.id]);
                 text(item.id + ': ');
                 if (item.value % 2) {
                     text('even');

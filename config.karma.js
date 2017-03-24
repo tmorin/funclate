@@ -30,7 +30,7 @@ module.exports = function (config) {
         browsers: ['PhantomJS'],
         // browsers: ['Firefox'],
 
-        frameworks: ['mocha'],
+        frameworks: ['mocha', 'sinon-chai'],
 
         singleRun: true,
 

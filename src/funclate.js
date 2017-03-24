@@ -1,3 +1,13 @@
+function assign() {
+    return Array.prototype.reduce.call(arguments, function (target, source) {
+        return Object.keys(Object(source)).reduce((target, key) => {
+            target[key] = source[key];
+            return target;
+        }, target);
+    });
+}
+
+
 /**
  * The current root element, i.e. where the starting point of the updateElement function.
  * @type {Node}
@@ -219,16 +229,33 @@ export function updateElement(root, render) {
     restoreCtx(ctx);
 }
 
+function fromArrayToObject(array) {
+    if (!array) {
+        return array;
+    }
+    const object = {};
+    const max = array.length;
+    for (let i = 0; i < max; i = i + 2) {
+        object[array[i]] = array[i + 1];
+    }
+    return object;
+}
+
 /**
  * Open an element.
  * @param {!string} name the name of the element
- * @param {Object.<string, string|number|boolean>} [attrs] the attributes of the element
- * @param {Object.<string, *>} [props] the properties of the element
- * @param {ElementOptions} [opts] the options driving the creation of the element
+ * @param {Array.<undefined|null|string|number|boolean>} [attrs] the attributes of the element
+ * @param {Array.<*>} [props] the properties of the element
+ * @param {Array.<*>} [opts] the options driving the creation of the element
  * @return {Element} the element
  */
 export function openElement(name, attrs, props, opts) {
-    return handleElement(name, attrs, props, opts);
+    return handleElement(
+        name,
+        fromArrayToObject(attrs),
+        fromArrayToObject(props),
+        fromArrayToObject(opts)
+    );
 }
 
 /**
@@ -248,9 +275,13 @@ export function closeElement() {
  * @param {ElementOptions} [opts] the options driving the creation of the element
  * @return {Element} the element
  */
-export function openVoidElement(name, attrs, props, opts = {}) {
-    opts.skipChildren = true;
-    return handleElement(name, attrs, props, opts);
+export function voidElement(name, attrs, props, opts = []) {
+    return handleElement(
+        name,
+        fromArrayToObject(attrs),
+        fromArrayToObject(props),
+        assign({skipChildren: true}, fromArrayToObject(opts))
+    );
 }
 
 /**
