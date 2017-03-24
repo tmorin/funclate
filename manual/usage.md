@@ -91,3 +91,21 @@ Then the following DOM node is built
 ```
 
 As you see, the light DOM `foo bar` is moved within the `<div></div>` node.
+
+## Reuse matching element with `key`
+
+When opening an element with `openElement()`, a `key` can be given as options.
+This key will be used during the rendering process.
+The idea is to discover and move an existing element having the same key.
+By this way the creating or recycling steps can be skipped. 
+
+```javascript
+import {updateElement, text, openElement, closeElement} from 'funclate';
+updateElement(document.querySelector('#container'), () => {
+    ['item1', 'item2', 'item3'].forEach(item => {
+        openElement('div', null, null, {key: item});
+        text(item);
+        closeElement();
+    });
+});
+```

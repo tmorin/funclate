@@ -22,6 +22,7 @@ let parentElement = null;
  * @type {object}
  * @property {boolean} content if true the element will be the entry of the light DOM structure
  * @property {boolean} skipChildren if true the children's element won't be parsed
+ * @property {Node} found will be used as current node
  */
 
 /**
@@ -34,7 +35,7 @@ function getCtx() {
 
 /**
  * Restore a context object.
- * @param {Context} ctx the context to restore
+ * @param {!Context} ctx the context to restore
  */
 function restoreCtx(ctx) {
     rootElement = ctx.root;
@@ -83,19 +84,13 @@ function clearIndex() {
  * @param {!string} value the node's value
  * @param {!number} nodeType the node's type
  * @param {!function(value: string): Node} factory the factory creating the node when necessary
- * @param {Node} found which should be the current node
  * @return {Node} the handled node
  */
-function handleNode(value, nodeType, factory, found) {
+function handleNode(value, nodeType, factory) {
     const index = nextIndex();
     let current = parentElement.childNodes.item(index);
-    if (found) {
-        if (current) {
-            current = parentElement.insertBefore(found, current);
-        } else {
-            current = parentElement.appendChild(factory(value));
-        }
-    } else if (current) {
+
+    if (current) {
         if (current.nodeType !== nodeType) {
             parentElement.insertBefore(factory(value), current);
         } else {
@@ -104,6 +99,7 @@ function handleNode(value, nodeType, factory, found) {
     } else {
         parentElement.appendChild(factory(value));
     }
+
     return current;
 }
 
@@ -119,23 +115,41 @@ function createElement(name, attrs) {
 }
 
 /**
+ * According to the current context, try to find a node matching with the given key.
+ * @param {string} key the key
+ * @return {Node|undefined}
+ */
+function findNodeFromKey(key) {
+    const from = lastIndex();
+    const end = parentElement.childNodes.length;
+    for (let i = from; i < end; i++) {
+        const child = parentElement.childNodes.item(i);
+        if (child.dataset && child.dataset.fcKey === key) {
+            return child;
+        }
+    }
+}
+
+/**
  * Handle a {Element}.
  * @param {!string} name the name of the element
  * @param {Object.<string, string|number|boolean>} [attrs] the attributes of the element
  * @param {Object.<string, *>}  [props] the properties of the element
  * @param {ElementOptions} [opts] the options driving the creation of the element
- * @param {Element} [found] which should be the current element
  * @return {Element} the handled element
  */
-function handleElement(name, attrs, props, opts = {}, found = null) {
+function handleElement(name, attrs, props, opts = {}) {
     const index = nextIndex();
     let current = parentElement.childNodes.item(index);
 
+    let found = opts.found ? opts.found : null;
+    if (!found && opts.key) {
+        found = findNodeFromKey(opts.key);
+    }
+
     if (found) {
-        if (current) {
+        if (current !== found) {
             current = parentElement.insertBefore(found, current);
-        } else {
-            current = parentElement.appendChild(found);
         }
     } else if (current) {
         if (name.toLowerCase() !== (current.tagName || '').toLowerCase()) {
@@ -156,6 +170,10 @@ function handleElement(name, attrs, props, opts = {}, found = null) {
 
     if (props) {
         Object.keys(props).forEach(k => current[k] = props[k]);
+    }
+
+    if (opts.key) {
+        current.dataset.fcKey = opts.key;
     }
 
     if (opts.content) {
@@ -240,7 +258,10 @@ export function openVoidElement(name, attrs, props, opts = {}) {
  * This node will be used to locate the entry of the light DOM structure.
  */
 export function content() {
-    rootElement.__content__ = handleElement('fc-content', null, null, {skipChildren: true}, rootElement.__content__);
+    rootElement.__content__ = handleElement('fc-content', null, null, {
+        skipChildren: true,
+        found: rootElement.__content__
+    });
 }
 
 /**

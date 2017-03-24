@@ -1,16 +1,8 @@
 /*jshint -W030 */
-import chai from 'chai';
-import sinonChai from 'sinon-chai';
-import {spy} from 'sinon';
-import {
-    closeElement,
-    comment,
-    content,
-    openElement,
-    openVoidElement,
-    text,
-    updateElement
-} from '../src/funclate';
+import chai from "chai";
+import sinonChai from "sinon-chai";
+import {spy} from "sinon";
+import {closeElement, comment, content, openElement, openVoidElement, text, updateElement} from "../src/funclate";
 
 const expect = chai.expect;
 chai.use(sinonChai);
@@ -234,9 +226,9 @@ describe('updateElement()', () => {
         expect(el.childNodes.length, '1').to.be.eq(2);
     });
 
-    xit('should manage identified nodes', () => {
+    it('should manage identified element', () => {
         const items = [];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 6; i++) {
             items.push({id: 'item-' + i, value: i});
         }
 
@@ -258,17 +250,18 @@ describe('updateElement()', () => {
         updateElement(el, render);
         el.querySelectorAll('li').forEach((li, i) => {
             const id = li.dataset.fcKey;
-            console.log(id, li);
             initialLiList[id] = li;
             expect(id, 'initial ' + id).to.be.eq('item-' + i);
         });
-        console.log('--------------', initialLiList);
+
+        items.shift();
+        items.pop();
         items.reverse();
         updateElement(el, render);
+        expect(el.querySelectorAll('li').length, 'count').to.be.eq(Object.keys(initialLiList).length - 2);
         el.querySelectorAll('li').forEach(li => {
             const id = li.dataset.fcKey;
             const initialLi = initialLiList[id];
-            console.log(id, li, initialLi);
             expect(li, 'reverse ' + id).to.be.eq(initialLi);
         });
 
