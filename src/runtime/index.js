@@ -1,18 +1,16 @@
-function assign() {
-    return Array.prototype.reduce.call(arguments, function (target, source) {
-        return Object.keys(Object(source)).reduce((target, key) => {
-            target[key] = source[key];
-            return target;
-        }, target);
-    });
-}
-
+import {updateAttributes, updateProperties, sanitize, fromArrayToObject, findNodeFromKey} from './utils';
 
 /**
  * The current root element, i.e. where the starting point of the updateElement function.
- * @type {Node}
+ * @type {Element}
  */
 let rootElement = null;
+
+/**
+ * The current document owning the current root element
+ * @type {Document}
+ */
+let rootDocument = null;
 
 /**
  * The current parent element of the processed instruction.
@@ -23,8 +21,9 @@ let parentElement = null;
 /**
  * @typedef Context
  * @type {object}
- * @property {Node} root the root element
+ * @property {Element} root the root element
  * @property {Element} parent the parent element
+ * @property {Document} document the document owning the root element
  */
 
 /**
@@ -40,7 +39,7 @@ let parentElement = null;
  * @return {Context} the context
  */
 function getCtx() {
-    return {root: rootElement, parent: parentElement};
+    return {root: rootElement, parent: parentElement, document: rootDocument};
 }
 
 /**
@@ -50,14 +49,17 @@ function getCtx() {
 function restoreCtx(ctx) {
     rootElement = ctx.root;
     parentElement = ctx.parent;
+    rootDocument = ctx.document;
 }
 
 /**
  * Remove the un-visited nodes.
  */
 function cleanRemainingNodes() {
-    while (parentElement.childNodes.length > lastIndex()) {
-        parentElement.removeChild(parentElement.lastChild);
+    if (rootElement.__content__ !== parentElement) {
+        while (parentElement.childNodes.length > lastIndex()) {
+            parentElement.removeChild(parentElement.lastChild);
+        }
     }
 }
 
@@ -79,7 +81,7 @@ function nextIndex() {
  * @return {number} the index
  */
 function lastIndex() {
-    return parentElement.fcIndex;
+    return parentElement.fcIndex || 0;
 }
 
 /**
@@ -120,41 +122,25 @@ function handleNode(value, nodeType, factory) {
  * @return {Element} the element
  */
 function createElement(name, attrs) {
-    const is = attrs && attrs.is;
-    return is ? document.createElement(name, is) : document.createElement(name);
-}
-
-/**
- * According to the current context, try to find a node matching with the given key.
- * @param {string} key the key
- * @return {Node|undefined}
- */
-function findNodeFromKey(key) {
-    const from = lastIndex();
-    const end = parentElement.childNodes.length;
-    for (let i = from; i < end; i++) {
-        const child = parentElement.childNodes.item(i);
-        if (child.dataset && child.dataset.fcKey === key) {
-            return child;
-        }
-    }
+    let index = attrs ? attrs.indexOf('is') : -1;
+    return index > -1 ? rootDocument.createElement(name, attrs[index + 1]) : rootDocument.createElement(name);
 }
 
 /**
  * Handle a {Element}.
  * @param {!string} name the name of the element
- * @param {Object.<string, string|number|boolean>} [attrs] the attributes of the element
- * @param {Object.<string, *>}  [props] the properties of the element
+ * @param {Array} [attrs] the attributes of the element
+ * @param {Array}  [props] the properties of the element
  * @param {ElementOptions} [opts] the options driving the creation of the element
  * @return {Element} the handled element
  */
-function handleElement(name, attrs, props, opts = {}) {
+function handleElement(name, attrs, props, opts) {
     const index = nextIndex();
     let current = parentElement.childNodes.item(index);
 
     let found = opts.found ? opts.found : null;
     if (!found && opts.key) {
-        found = findNodeFromKey(opts.key);
+        found = findNodeFromKey(parentElement, lastIndex(), opts.key);
     }
 
     if (found) {
@@ -174,13 +160,8 @@ function handleElement(name, attrs, props, opts = {}) {
         );
     }
 
-    if (attrs) {
-        Object.keys(attrs).forEach(k => current.setAttribute(k, attrs[k]));
-    }
-
-    if (props) {
-        Object.keys(props).forEach(k => current[k] = props[k]);
-    }
+    updateAttributes(current, attrs);
+    updateProperties(current, props);
 
     if (opts.key) {
         current.dataset.fcKey = opts.key;
@@ -206,11 +187,12 @@ export function updateElement(root, render) {
     const ctx = getCtx();
 
     rootElement = root;
+    rootDocument = root.ownerDocument;
     parentElement = root;
 
     let lightFrag = null;
     if (!root.__visited__) {
-        lightFrag = document.createDocumentFragment();
+        lightFrag = rootDocument.createDocumentFragment();
         while (root.childNodes.length > 0) {
             lightFrag.appendChild(root.removeChild(root.firstChild));
         }
@@ -229,31 +211,19 @@ export function updateElement(root, render) {
     restoreCtx(ctx);
 }
 
-function fromArrayToObject(array) {
-    if (!array) {
-        return array;
-    }
-    const object = {};
-    const max = array.length;
-    for (let i = 0; i < max; i = i + 2) {
-        object[array[i]] = array[i + 1];
-    }
-    return object;
-}
-
 /**
  * Open an element.
  * @param {!string} name the name of the element
  * @param {Array.<undefined|null|string|number|boolean>} [attrs] the attributes of the element
- * @param {Array.<*>} [props] the properties of the element
+ * @param {Array} [props] the properties of the element
  * @param {Array.<*>} [opts] the options driving the creation of the element
  * @return {Element} the element
  */
 export function openElement(name, attrs, props, opts) {
     return handleElement(
         name,
-        fromArrayToObject(attrs),
-        fromArrayToObject(props),
+        attrs,
+        props,
         fromArrayToObject(opts)
     );
 }
@@ -270,17 +240,17 @@ export function closeElement() {
 /**
  * Open and close a void element.
  * @param {!string} name the name of the element
- * @param {Object.<string, string|number|boolean>} [attrs] the attributes of the element
- * @param {Object.<string, *>} [props] the properties of the element
- * @param {ElementOptions} [opts] the options driving the creation of the element
+ * @param {Array.<undefined|null|string|number|boolean>} [attrs] the attributes of the element
+ * @param {Array} [props] the properties of the element
+ * @param {Array.<*>} [opts] the options driving the creation of the element
  * @return {Element} the element
  */
-export function voidElement(name, attrs, props, opts = []) {
+export function voidElement(name, attrs, props, opts) {
     return handleElement(
         name,
-        fromArrayToObject(attrs),
-        fromArrayToObject(props),
-        assign({skipChildren: true}, fromArrayToObject(opts))
+        attrs,
+        props,
+        fromArrayToObject(['skipChildren', true].concat(opts))
     );
 }
 
@@ -300,8 +270,8 @@ export function content() {
  * @param {string} [value] the node value
  * @returns {Text}
  */
-function textNodeFactory(value = '') {
-    return document.createTextNode(value);
+function textNodeFactory(value) {
+    return rootDocument.createTextNode(sanitize(value));
 }
 
 /**
@@ -309,8 +279,8 @@ function textNodeFactory(value = '') {
  * @param {string} [value] the node value
  * @returns {Comment}
  */
-function commentFactory(value = '') {
-    return document.createComment(value);
+function commentFactory(value) {
+    return rootDocument.createComment(sanitize(value));
 }
 
 /**
@@ -319,7 +289,7 @@ function commentFactory(value = '') {
  * @return {Node} the text node
  */
 export function text(text) {
-    return handleNode(text, Node.TEXT_NODE, textNodeFactory, null);
+    return handleNode(text, rootElement.TEXT_NODE, textNodeFactory, null);
 }
 
 /**
@@ -328,5 +298,5 @@ export function text(text) {
  * @return {Node} the comment node
  */
 export function comment(text) {
-    return handleNode(text, Node.COMMENT_NODE, commentFactory, null);
+    return handleNode(text, rootElement.COMMENT_NODE, commentFactory, null);
 }

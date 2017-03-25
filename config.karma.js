@@ -7,11 +7,6 @@ const webpackConfig = {
             test: /\.js$/,
             loader: 'babel-loader',
             exclude: /node_modules/
-        }, {
-            test: /src\/.+\.js$/,
-            exclude: /(node_modules|\.spec\.ts$)/,
-            loader: 'istanbul-instrumenter-loader',
-            enforce: 'post'
         }]
     },
     plugins: [
@@ -21,27 +16,39 @@ const webpackConfig = {
         })
     ]
 };
-
 module.exports = function (config) {
+    let reporters = ['progress'];
+    if (process.env.COVERAGE) {
+        webpackConfig.module.rules.push({
+            test: /src\/.+\.js$/,
+            exclude: /(node_modules|\.spec\.ts$)/,
+            loader: 'istanbul-instrumenter-loader',
+            enforce: 'post'
+        });
+        reporters.push('coverage-istanbul');
+    }
     config.set({
 
         basePath: './',
 
         browsers: ['PhantomJS'],
-        // browsers: ['Firefox'],
+        //browsers: ['Firefox'],
+        //browsers: ['PhantomJS', 'Firefox'],
 
         frameworks: ['mocha', 'sinon-chai'],
 
         singleRun: true,
 
-        reporters: ['progress', 'coverage-istanbul'],
+        reporters: reporters,
 
         files: [
-            'test/**/*.spec.js'
+            'test/runtime/*.spec.js',
+            'test/parser/*.spec.js'
         ],
 
         preprocessors: {
-            'test/**/*.spec.js': ['webpack', 'sourcemap']
+            'test/runtime/*.spec.js': ['webpack', 'sourcemap'],
+            'test/parser/*.spec.js': ['webpack', 'sourcemap']
         },
 
         client: {
