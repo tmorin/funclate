@@ -1,6 +1,6 @@
 {
   "name": "funclate",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A 'build time' HTML parser + a 'runtime' template engine to patch the DOM incrementally.",
   "keywords": [
     "custom",
