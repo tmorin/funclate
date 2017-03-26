@@ -31,7 +31,6 @@
     "build:umd:min": "webpack src/runtime/index.js dist/funclate.min.js --config config.webpack.js --optimize-minimize --define process.env.NODE_ENV='production'",
     "build": "npm run build:lib && npm run build:umd && npm run build:umd:min",
     "preversion": "npm run check",
-    "version": "git add -A",
     "postversion": "git push && git push --tags && npm run clean && npm run docs:publish",
     "prepublish": "npm run clean && npm run build",
     "docs:clean": "rimraf esdoc",
