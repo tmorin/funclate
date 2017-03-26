@@ -1,4 +1,4 @@
-import parse5 from 'parse5';
+import htmlparser2 from 'htmlparser2';
 import stream from 'stream';
 import {FcEachTag} from './FcEachTag';
 import {FcIfTag} from './FcIfTag';
@@ -24,64 +24,59 @@ const DEFAULT_OPTIONS = {
     tags: tags
 };
 
-export function parse(html, options, callback) {
+export function parse(html, options) {
     options = assign({}, DEFAULT_OPTIONS, options);
     const s = new stream.Readable();
     s.push(html);
     s.push(null);
 
-    const parser = new parse5.SAXParser();
     const factory = new Factory(options);
-
-    parser.on('startTag', (name, attrs, selfClosing) => {
-        if (options.tags[name]) {
-            const attributes = attrs.reduce((m, a) => {
-                m[a.name] = a;
-                return m;
-            }, {});
-            options.tags[name].startTag(factory, name, attributes, selfClosing);
-        } else {
-            const fcAttrs = Statements.get(options);
-            const fcProps = Statements.get(options);
-            attrs.forEach(attr => {
-                const index = attr.name.indexOf(options.property);
-                let name = attr.name;
-                let destination = fcAttrs;
-                if (index > -1) {
-                    name = attr.name.substring(index + 1);
-                    destination = fcProps;
-                }
-                destination.append(`'${name}', ${interpolate(attr.value, options)}`);
-            });
-            if (selfClosing || options.selfClosingElements.indexOf(name) > -1) {
-                factory.appendVoidElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`);
+    const p = new htmlparser2.Parser({
+        onopentag(name, attrs, selfClosing) {
+            if (options.tags[name]) {
+                options.tags[name].startTag(factory, name, attrs, selfClosing);
             } else {
-                factory.appendOpenElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`);
+                const fcAttrs = Statements.get(options);
+                const fcProps = Statements.get(options);
+                Object.keys(attrs).forEach(attName => {
+                    const index = attName.indexOf(options.property);
+                    let name = attName;
+                    let destination = fcAttrs;
+                    if (index > -1) {
+                        name = attName.substring(index + 1);
+                        destination = fcProps;
+                    }
+                    destination.append(`'${name}', ${interpolate(attrs[attName], options)}`);
+                });
+                if (options.selfClosingElements.indexOf(name) > -1) {
+                    factory.appendVoidElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`);
+                } else {
+                    factory.appendOpenElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`);
+                }
             }
+        },
+        onclosetag(name, toto) {
+            if (options.tags[name]) {
+                options.tags[name].endTag(factory, name);
+            } else if (options.selfClosingElements.indexOf(name) < 0) {
+                factory.appendCloseElement();
+            }
+        },
+        ontext(text){
+            factory.appendText(interpolate(text, options));
+        },
+        oncomment(text){
+            factory.appendComment(interpolate(text, options));
         }
+    }, {
+        xmlMode: false,
+        decodeEntities: false,
+        lowerCaseTags: true,
+        lowerCaseAttributeNames: true,
+        recognizeSelfClosing: true,
+        recognizeCDATA: true
     });
 
-    parser.on('endTag', name => {
-        if (options.tags[name]) {
-            options.tags[name].endTag(factory, name);
-        } else {
-            factory.appendCloseElement();
-        }
-    });
-
-    parser.on('comment', text => {
-        factory.appendComment(interpolate(text, options));
-    });
-
-    parser.on('text', text => {
-        factory.appendText(interpolate(text, options));
-    });
-
-    return s.pipe(parser).on('end', err => {
-        if (err) {
-            callback(err);
-        } else {
-            callback(undefined, factory.toFunction());
-        }
-    });
+    p.parseComplete(html);
+    return factory.toFunction();
 }

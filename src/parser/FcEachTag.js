@@ -9,10 +9,10 @@ import {FcTag} from './FcTag';
  */
 export class FcEachTag extends FcTag {
     startTag(factory, name, attributes, selfClosing) {
-        const itemsVar = attributes['fc-items'] ? attributes['fc-items'].value : '[]';
-        const itemVar = attributes['fc-item'] ? attributes['fc-item'].value : 'item';
-        const indexVar = attributes['fc-index'] ? attributes['fc-index'].value : 'index';
-        const allVar = attributes['fc-all'] ? attributes['fc-all'].value : 'all';
+        const itemsVar = attributes['fc-items'] ? attributes['fc-items'] : '[]';
+        const itemVar = attributes['fc-item'] ? attributes['fc-item'] : 'item';
+        const indexVar = attributes['fc-index'] ? attributes['fc-index'] : 'index';
+        const allVar = attributes['fc-all'] ? attributes['fc-all'] : 'all';
         factory.append(`${itemsVar}.forEach(function (${itemVar}, ${indexVar}, ${allVar}) {`);
     }
 

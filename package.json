@@ -1,15 +1,28 @@
 {
   "name": "funclate",
   "version": "0.0.0",
-  "description": "Templating engine like incremental-dom but for Custom Element.",
+  "description": "A 'build time' HTML parser + a 'runtime' template engine to patch the DOM incrementally.",
+  "keywords": [
+    "custom",
+    "element",
+    "custom-element",
+    "template",
+    "incremental",
+    "babel",
+    "babel-loader",
+    "webpack",
+    "loader",
+    "browserify",
+    "browserify-plugin"
+  ],
   "main": "lib/runtime/index.js",
   "jsnext:main": "src/runtime/index.js",
   "scripts": {
     "clean": "rimraf .nyc_output coverage dist lib *.tgz",
     "lint": "jshint src test",
     "test:integration": "mocha --compilers js:babel-register test/integration",
-    "test": "karma start config.karma.js",
-    "test:coverage": "COVERAGE=true karma start config.karma.js",
+    "test:others": "karma start config.karma.js",
+    "test": "COVERAGE=true npm run test:others && npm run test:integration",
     "test:watch": "npm run test -- --auto-watch --no-single-run",
     "coveralls": "cat coverage/lcov.info | coveralls --verbose",
     "check": "npm run lint && npm run test",
@@ -20,7 +33,7 @@
     "preversion": "npm run check",
     "version": "npm run build && git add -A dist",
     "postversion": "git push && git push --tags && npm run clean && npm run docs:publish",
-    "prepublish": "npm run clean && npm run check && npm run build",
+    "prepublish": "npm run clean && npm run build",
     "docs:clean": "rimraf esdoc",
     "docs:build": "npm run docs:clean && esdoc -c esdoc.json",
     "docs:publish": "npm run docs:build && cd esdoc && git init && git commit --allow-empty -m 'update esdoc' && git checkout -b gh-pages && git add . && git commit -am 'update esdoc, [skip ci]' && git push git@github.com:tmorin/funclate gh-pages --force && cd .. && npm run docs:clean"
@@ -37,7 +50,11 @@
   "bugs": {
     "url": "https://github.com/tmorin/funclate/issues"
   },
-  "homepage": "https://github.com/tmorin/funclate#readme",
+  "homepage": "https://tmorin.github.io/funclate",
+  "dependencies": {
+    "htmlparser2": "^3.9.2",
+    "loader-utils": "^1.1.0"
+  },
   "devDependencies": {
     "babel-cli": "^6.24.0",
     "babel-core": "^6.24.0",
@@ -63,7 +80,6 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.3",
     "mocha": "^3.2.0",
-    "parse5": "^3.0.2",
     "phantomjs-prebuilt": "^2.1.14",
     "rimraf": "^2.6.1",
     "sinon": "^2.1.0",
@@ -91,8 +107,5 @@
     "evil": true,
     "quotmark": "single",
     "esversion": 6
-  },
-  "dependencies": {
-    "loader-utils": "^1.1.0"
   }
 }

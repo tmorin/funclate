@@ -6,23 +6,46 @@
 [![Coverage Status](https://coveralls.io/repos/github/tmorin/funclate/badge.svg?branch=master)](https://coveralls.io/github/tmorin/funclate?branch=master)
 <img data-ice="coverageBadge" src="http://tmorin.github.io/funclate/badge.svg">
 
-A templating engine patching the DOM incrementally like [incremental-dom](https://google.github.io/incremental-dom/) but with Custom Element in mind.
+> **fun**ction + temp**late** = **funclate**
 
-That means, even if the philosophy of both templating system are closed,
-`funclate()` focused on custom element managing pseudo light/shadow DOM trees.
+A __build time__ HTML parser + a __runtime__ template engine to patch the DOM incrementally.
+
+funclate has been designed with custom element in mind managing pseudo light/shadow DOM trees.
 Moreover, the creation of element like `<button is="my-button"></button>` is obviously shipped.
 
+So, for instance the following es6 snippet:
 ```javascript
-import {updateElement, openElement, closeElement, text} from 'funclate';
-updateElement(document.querySelector('#container'), el => {
-    // open a tag button
-    openElement('button');
-    // add a text node inside the button,
-    // the value of the text node is the value of the attribute label
-    text(el.getAttribute('label'));
-    // close the tag button
-    closeElement();    
-});
+import * as fc from 'funclate';
+
+const body = document.body.querySelector('body');
+
+let template = funclate`<p class="foo {{el.bar}}">Hello</p>`;
+
+fc.updateElement(body, template(fc));
+```
+
+Will be compiled at build time to:
+```javascript
+import * as fc from 'funclate';
+
+const body = document.body.querySelector('body');
+
+var template = function (funclate) {
+    var fcOpenElement = funclate.openElement;
+    var fcCloseElement = funclate.closeElement;
+    var fcVoidElement = funclate.voidElement;
+    var fcContent = funclate.content;
+    var fcText = funclate.text;
+    var fcComment = funclate.comment;
+    return function (__el__) {
+        var el = __el__;
+        fcOpenElement('p', ['class', 'foo ' + (el.bar === undefined || el.bar === null ? '' : el.bar)], [], undefined);
+        fcText('Hello');
+        fcCloseElement();
+    };
+};
+
+fc.updateElement(body, template(fc));
 ```
 
 Learn more browsing [the manual](http://tmorin.github.io/funclate)!

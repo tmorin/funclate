@@ -10,11 +10,6 @@ const options = {
  */
 export default makeStringTransform('idomizerify', options, (content, transformOptions, done) => {
     transformOptions.config.output = 'string';
-    parse(content, transformOptions.config, (err, render) => {
-        if (err) {
-            done(err);
-        } else {
-            done(null, 'module.exports = ' + render + ';');
-        }
-    });
+    const factory = parse(content, transformOptions.config);
+    done(null, 'module.exports = ' + factory + ';');
 });

@@ -9,7 +9,7 @@ import {FcTag} from './FcTag';
  */
 export class FcIfTag extends FcTag {
     startTag(factory, name, attributes, selfClosing) {
-        const condition = attributes['fc-condition'] ? attributes['fc-condition'].value : 'false';
+        const condition = attributes['fc-condition'] ? attributes['fc-condition'] : 'false';
         factory.append(`if (${condition}) {`);
     }
 

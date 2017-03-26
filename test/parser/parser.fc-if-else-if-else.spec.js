@@ -16,7 +16,7 @@ describe('FcIf', () => {
         el.innerHTML = '';
     });
 
-    it('should manage boolean condition', done => {
+    it('should manage boolean condition', () => {
         const html = `
             <fc-if fc-condition="el.condition === 'if'">
                 if
@@ -26,28 +26,21 @@ describe('FcIf', () => {
                 else
             </fc-if>
         `;
-        parse(html, {pretty: true}, (err, factory) => {
-            if (err) {
-                return done(err);
-            }
+        const factory = parse(html, {pretty: true});
+        el.condition = 'if';
+        updateElement(el, factory(funclate));
+        expect(el.textContent.trim(), 'if').to.be.eq('if');
 
-            el.condition = 'if';
-            updateElement(el, factory(funclate));
-            expect(el.textContent.trim(), 'if').to.be.eq('if');
+        el.condition = 'else-if';
+        updateElement(el, factory(funclate));
+        expect(el.textContent.trim(), 'else-if').to.be.eq('else-if');
 
-            el.condition = 'else-if';
-            updateElement(el, factory(funclate));
-            expect(el.textContent.trim(), 'else-if').to.be.eq('else-if');
-
-            el.condition = 'else';
-            updateElement(el, factory(funclate));
-            expect(el.textContent.trim(), 'else').to.be.eq('else');
-
-            done();
-        });
+        el.condition = 'else';
+        updateElement(el, factory(funclate));
+        expect(el.textContent.trim(), 'else').to.be.eq('else');
     });
 
-    it('should manage no condition', done => {
+    it('should manage no condition', () => {
         const html = `
             <fc-if>
                 if
@@ -57,16 +50,9 @@ describe('FcIf', () => {
                 else
             </fc-if>
         `;
-        parse(html, {pretty: true}, (err, factory) => {
-            if (err) {
-                return done(err);
-            }
-
-            updateElement(el, factory(funclate));
-            expect(el.textContent.trim(), 'else').to.be.eq('else');
-
-            done();
-        });
+        const factory = parse(html, {pretty: true});
+        updateElement(el, factory(funclate));
+        expect(el.textContent.trim(), 'else').to.be.eq('else');
     });
 
 });

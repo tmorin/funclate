@@ -1,8 +1,13 @@
 module.exports = {
     module: {
-        rules: [
-            {test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'}
-        ]
+        rules: [{
+            test: /\.js$/,
+            loader: 'babel-loader',
+            exclude: /node_modules/
+        }, {
+            test: /\.json$/,
+            loader: 'json-loader'
+        }]
     },
     output: {
         library: 'funclate',
