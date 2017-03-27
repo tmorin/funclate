@@ -18,7 +18,7 @@ describe('parse()', () => {
 
     it('should render a string function', () => {
         const html = '<p class="foo {{ el.bar }}"></p>';
-        const factory = parse(html, {pretty: true, output: 'string'});
+        const factory = parse(html, {pretty: false, output: 'string'});
         expect(factory).to.contain(`fcOpenElement('p', ['class', 'foo ' + (el.bar === undefined || el.bar === null ? '' : el.bar)], [], undefined);`);
         expect(factory).to.contain(`fcCloseElement();`);
     });

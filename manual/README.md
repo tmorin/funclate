@@ -1,6 +1,6 @@
 # funclate
 
-> **fun**ction + temp**late** = **funclate**
+> **func**tion + temp**late** = **funclate**
 
 A __build time__ HTML parser + a __runtime__ template engine to patch the DOM incrementally.
 

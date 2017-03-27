@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/tmorin/funclate/badge.svg?branch=master)](https://coveralls.io/github/tmorin/funclate?branch=master)
 <img data-ice="coverageBadge" src="http://tmorin.github.io/funclate/badge.svg">
 
-> **fun**ction + temp**late** = **funclate**
+> **func**tion + temp**late** = **funclate**
 
 A __build time__ HTML parser + a __runtime__ template engine to patch the DOM incrementally.
 
