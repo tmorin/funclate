@@ -1,5 +1,4 @@
 import htmlparser2 from 'htmlparser2';
-import stream from 'stream';
 import {FcEachTag} from './FcEachTag';
 import {FcIfTag} from './FcIfTag';
 import {FcElseTag} from './FcElseTag';
