@@ -8,3 +8,5 @@
 - simple rendering
 - complex rendering
 - shadow/light DOM management
+- parse HTML template
+- add Babel, Browserify and Webpack support

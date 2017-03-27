@@ -1,3 +1,6 @@
+/**
+ * @private
+ */
 export class Statements {
     constructor(options) {
         this.options = options;

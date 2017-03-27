@@ -2,7 +2,7 @@
 
 > **func**tion + temp**late** = **funclate**
 
-A __build time__ HTML parser + a __runtime__ template engine to patch the DOM incrementally.
+A _build time_ HTML parser + a _runtime_ template engine to patch the DOM incrementally.
 
 funclate has been designed with custom element in mind managing pseudo light/shadow DOM trees.
 Moreover, the creation of element like `<button is="my-button"></button>` is obviously shipped.
@@ -18,7 +18,7 @@ let template = funclate`<p class="foo {{el.bar}}">Hello</p>`;
 fc.updateElement(body, template(fc));
 ```
 
-Will be compiled at build time to:
+Will be compiled (using the provided _babel loader_) at build time:
 ```javascript
 import * as fc from 'funclate';
 

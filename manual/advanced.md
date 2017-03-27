@@ -1,27 +1,6 @@
-# Usage
+# Advanced
 
-## Runtime
-
-The main function is :
-
-```updateElement(element: HTMLElement, render: function(element: HTMLElement))```
-
-The template (i.e. the render function) has to be given as a `function`.
-
-```javascript
-import {updateElement, openElement, closeElement, text} from 'funclate';
-updateElement(document.querySelector('#container'), el => {
-    // open a tag button
-    openElement('button');
-    // add a text node inside the button,
-    // the value of the text node is the value of the attribute label
-    text(el.getAttribute('label'));
-    // close the tag button
-    closeElement();    
-});
-```
-
-### Methods
+## Methods
 
 To open an element the method `openElement()` has to be called first
 and then `closeElement()` has to be called to close the element.
@@ -33,13 +12,13 @@ Between both invocations all other invocations will be related to children, sub-
 
 `fcComment()` has to be used to insert HTML comments.
 
-### Shadow DOM and light DOM
+## Shadow DOM and light DOM
 
 The management of the pseudo shadow/light DOM is closed to the _transclude_ concept of AngularJs.
 The idea is to perform the rendering many time without touching the sub DOM tree, 
 i.e. the rendering operation update the shadow DOM like structure skipping the light DOM like structure.
 
-#### Using the `<content></content>` element like
+### Using the `<content></content>` element like
 
 Given the following rendering function, declaring a "content" node using `content()`.
 
@@ -66,7 +45,7 @@ Then the following DOM node is built
 
 As you see, the light DOM `foo bar` is moved within the `<fc-content></fc-content>` node.
 
-#### Using the option `content`
+### Using the option `content`
 
 Given the following rendering function, declaring a "content" node using the option `content`.
 
@@ -94,7 +73,7 @@ Then the following DOM node is built
 
 As you see, the light DOM `foo bar` is moved within the `<div></div>` node.
 
-### Reuse matching element with `key`
+## Reuse matching element with `key`
 
 When opening an element with `openElement()`, a `key` can be given as options.
 This key will be used during the rendering process.

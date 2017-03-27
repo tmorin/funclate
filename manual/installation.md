@@ -1,18 +1,12 @@
 # Installation
 
-`funclate` is available from [npm](https://www.npmjs.com/package/funclate) and [bower](http://bower.io/search/?q=funclate).
+`funclate` is available from [npm](https://www.npmjs.com/package/funclate).
 
-From npm:
 ```bash
 npm install funclate
 ```
 
-From bower:
-```bash
-bower install funclate
-```
-
-`funclate` can also be fetched from a [unpkg](https://unpkg.com), a CDN:
+`funclate` can also be fetched from [unpkg](https://unpkg.com), a CDN:
 
 ```html
 <script src="https://unpkg.com/funclate/dist/funclate.js"></script>
@@ -22,7 +16,11 @@ bower install funclate
 <script src="https://unpkg.com/funclate/dist/funclate.min.js"></script>
 ```
 
-## babel
+## Integration
+
+funclate is shipped with several plugins making the HTML parsing automatic from Babel, Webpack and Browserify.
+
+### babel
 
 A babel's plugin is available to compile an funclate template into a render factory.
 
@@ -59,7 +57,7 @@ var template = function (funclate) {
 ```
 Be aware the template can not contain expressions like ``${foo}``.
 
-## Webpack
+### webpack
 
 A webpack's loader is available to compile an funclate file into a render factory.
 
@@ -71,7 +69,7 @@ module.loaders: [
 ];
 ```
 
-## Browserify
+### browserify
 
 A browserify's transform module is available to compile an funclate file into a render factory.
 

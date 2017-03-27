@@ -1,7 +1,6 @@
 /*jshint -W030 */
 import {parse} from '../../src/parser';
-import * as funclate from '../../src/runtime';
-import {updateElement} from '../../src/runtime';
+import {createThenUpdate} from '../../src/runtime';
 
 describe('parse()', () => {
     let el;
@@ -26,7 +25,7 @@ describe('parse()', () => {
     it('should parse and render a very simple template', () => {
         const html = '<p>foo<!--comment--></p>';
         const factory = parse(html, {pretty: true});
-        updateElement(el, factory(funclate));
+        createThenUpdate(el, factory);
         expect(el.innerHTML, '1').to.be.eq(html);
     });
 
@@ -35,7 +34,7 @@ describe('parse()', () => {
         const factory = parse(html, {pretty: true});
         el.foo = 'foo';
         el.bar = 'bar';
-        updateElement(el, factory(funclate));
+        createThenUpdate(el, factory);
         expect(el.innerHTML, '1').to.be.eq('<p>before foo between bar after</p>');
     });
 
@@ -44,11 +43,11 @@ describe('parse()', () => {
         const factory = parse(html, {pretty: true});
         el.foo = 'foo';
         el.bar = 'bar';
-        updateElement(el, factory(funclate));
+        createThenUpdate(el, factory);
         expect(el.innerHTML, '1').to.be.eq('<p class="before foo between bar after">content</p>');
 
         el.bar = undefined;
-        updateElement(el, factory(funclate));
+        createThenUpdate(el, factory);
         expect(el.innerHTML, '1').to.be.eq('<p class="before foo between  after">content</p>');
     });
 
@@ -57,7 +56,7 @@ describe('parse()', () => {
         const factory = parse(html, {pretty: true});
         el.innerHTML = '<input bar="bar" />';
         el.foo = 'foo';
-        updateElement(el, factory(funclate));
+        createThenUpdate(el, factory);
         expect(el.innerHTML, '1').to.be.eq('<input foo="foo">');
     });
 
@@ -65,11 +64,11 @@ describe('parse()', () => {
         const html = '<input #value="{{ el.foo }}" />';
         const factory = parse(html, {pretty: true});
         el.foo = 'foo';
-        updateElement(el, factory(funclate));
+        createThenUpdate(el, factory);
         expect(el.querySelectorAll('input').item(0).value, '1').to.be.eq('foo');
 
         el.foo = 'bar';
-        updateElement(el, factory(funclate));
+        createThenUpdate(el, factory);
         expect(el.querySelectorAll('input').item(0).value, '2').to.be.eq('bar');
     });
 

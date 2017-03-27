@@ -2,6 +2,7 @@
  * Convert a value to an array.
  * @param {*} value the value to convert
  * @returns {Array} the array
+ * @private
  */
 export function toArray(value) {
     return value ? Array.prototype.slice.call(value) : [];
@@ -11,6 +12,7 @@ export function toArray(value) {
  * Convert undefined and null value to empty string.
  * @param {string} value the value to sanitize
  * @returns {string} the sanitized value
+ * @private
  */
 export function sanitize(value) {
     return value === undefined || value === null ? '' : value;
@@ -21,6 +23,7 @@ export function sanitize(value) {
  * The first value is the key, the second its value and so one.
  * @param {Array} array the array
  * @returns {object} the object
+ * @private
  */
 export function fromArrayToObject(array) {
     const object = {};
@@ -41,6 +44,7 @@ export function fromArrayToObject(array) {
  * @param {!number} from the index of the starting node
  * @param {!string} key the key to find
  * @returns {Node}
+ * @private
  */
 export function findNodeFromKey(parent, from, key) {
     const end = parent.childNodes.length;
@@ -56,6 +60,7 @@ export function findNodeFromKey(parent, from, key) {
  * Update the given element's attributes according to the new one.
  * @param {!Element} element the element
  * @param {Array.<undefined|null|string|number|boolean>} [attributes] the new attributes
+ * @private
  */
 export function updateAttributes(element, attributes) {
     attributes = attributes ? attributes : [];
@@ -86,6 +91,7 @@ export function updateAttributes(element, attributes) {
  * Update the given element's properties according to the new one.
  * @param {!Element} element the element
  * @param {Array} [properties] the new attributes
+ * @private
  */
 export function updateProperties(element, properties) {
     properties = properties ? properties : [];

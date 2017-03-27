@@ -10,6 +10,9 @@ import {FcTag} from './FcTag';
  * </fc-if>
  */
 export class FcElseTag extends FcTag {
+    /**
+     * @override FcTag#startTag
+     */
     startTag(factory, name, attributes, selfClosing) {
         factory.append(`} else {`);
     }

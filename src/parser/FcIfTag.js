@@ -8,11 +8,17 @@ import {FcTag} from './FcTag';
  * </fc-if>
  */
 export class FcIfTag extends FcTag {
+    /**
+     * @override FcTag#startTag
+     */
     startTag(factory, name, attributes, selfClosing) {
         const condition = attributes['fc-condition'] ? attributes['fc-condition'] : 'false';
         factory.append(`if (${condition}) {`);
     }
 
+    /**
+     * @override FcTag#endTag
+     */
     endTag(factory, name) {
         factory.append('}');
     }

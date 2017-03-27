@@ -1,3 +1,7 @@
+/**
+ * @return {*}
+ * @private
+ */
 export function assign() {
     return Array.prototype.reduce.call(arguments, function (target, source) {
         return Object.keys(Object(source)).reduce((target, key) => {
@@ -7,10 +11,23 @@ export function assign() {
     });
 }
 
+/**
+ *
+ * @param value
+ * @return {XML|string}
+ * @private
+ */
 function stringify(value) {
     return value.replace(/'/gim, '\\\'').replace(/\n/gi, '\\n');
 }
 
+/**
+ *
+ * @param value
+ * @param options
+ * @return {string}
+ * @private
+ */
 export function interpolate(value, options) {
     let result;
     let statements = [];

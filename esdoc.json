@@ -13,11 +13,31 @@
     "installation": [
       "./manual/installation.md"
     ],
+    "overview": [
+      "./manual/overview.md"
+    ],
     "usage": [
-      "./manual/usage.md"
+      "./manual/usage_templating.md",
+      "./manual/usage_runtime.md"
+    ],
+    "advanced": [
+      "./manual/advanced.md"
     ],
     "changelog": [
       "./CHANGELOG.md"
     ]
-  }
+  },
+  "plugins": [
+    {
+      "name": "esdoc-importpath-plugin",
+      "option": {
+        "replaces": [
+          {
+            "from": "/index.js$",
+            "to": ""
+          }
+        ]
+      }
+    }
+  ]
 }

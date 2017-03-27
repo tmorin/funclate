@@ -1,5 +1,8 @@
 import {Statements} from './Statements';
 
+/**
+ * @private
+ */
 export class Factory {
 
     constructor(options) {
