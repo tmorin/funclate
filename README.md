@@ -4,7 +4,6 @@
 [![Dependency Status](https://david-dm.org/tmorin/funclate.svg)](https://david-dm.org/tmorin/funclate)
 [![devDependency Status](https://david-dm.org/tmorin/funclate/dev-status.svg)](https://david-dm.org/tmorin/funclate?type=dev)
 [![Coverage Status](https://coveralls.io/repos/github/tmorin/funclate/badge.svg?branch=master)](https://coveralls.io/github/tmorin/funclate?branch=master)
-<img data-ice="coverageBadge" src="http://tmorin.github.io/funclate/badge.svg">
 
 > **func**tion + temp**late** = **funclate**
 
