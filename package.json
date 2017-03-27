@@ -23,7 +23,7 @@
     "test:integration": "mocha --compilers js:babel-register test/integration",
     "test:others": "karma start config.karma.js",
     "test": "COVERAGE=true npm run test:others && npm run test:integration",
-    "test:watch": "npm run test -- --auto-watch --no-single-run",
+    "test:watch": "npm run test:others -- --auto-watch --no-single-run",
     "coveralls": "cat coverage/lcov.info | coveralls --verbose",
     "check": "npm run lint && npm run test",
     "build:lib": "babel src --out-dir lib",

@@ -72,4 +72,12 @@ describe('parse()', () => {
         expect(el.querySelectorAll('input').item(0).value, '2').to.be.eq('bar');
     });
 
+    it('should interpolate property value with -', () => {
+        const html = '<input type="date" #value-alt-date="{{ el.foo }}" />';
+        const factory = parse(html, {pretty: true});
+        el.foo = new Date();
+        createThenUpdate(el, factory);
+        expect(el.querySelectorAll('input').item(0).valueAltDate, '1').to.be.eq(el.foo);
+    });
+
 });

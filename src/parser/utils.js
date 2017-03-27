@@ -51,3 +51,13 @@ export function interpolate(value, options) {
     }
     return statements.join(' + ');
 }
+
+/**
+ * Converts string to camel case.
+ * @param {!string} string the string to convert
+ * @return {string} the camel cased string
+ * @private
+ */
+export function toCamelCase(string) {
+    return string.toLowerCase().split('-').map((part, index) => index ? part.charAt(0).toUpperCase() + part.slice(1) : part).join('');
+}

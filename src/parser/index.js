@@ -5,7 +5,7 @@ import {FcElseTag} from './FcElseTag';
 import {FcElseIfTag} from './FcElseIfTag';
 import {Statements} from './Statements';
 import {Factory} from './Factory';
-import {assign, interpolate} from './utils';
+import {assign, interpolate, toCamelCase} from './utils';
 
 /**
  * @typedef {object} BUILT_IN_TAGS
@@ -63,7 +63,7 @@ export function parse(html, options) {
                     let name = attName;
                     let destination = fcAttrs;
                     if (index > -1) {
-                        name = attName.substring(index + 1);
+                        name = toCamelCase(attName.substring(index + 1));
                         destination = fcProps;
                     }
                     destination.append(`'${name}', ${interpolate(attrs[attName], options)}`);
