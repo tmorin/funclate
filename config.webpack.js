@@ -10,7 +10,6 @@ module.exports = {
         }]
     },
     output: {
-        library: 'funclate',
         libraryTarget: 'umd'
     }
 };
