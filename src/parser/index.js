@@ -49,9 +49,6 @@ const DEFAULT_OPTIONS = {
  */
 export function parse(html, options) {
     options = assign({}, DEFAULT_OPTIONS, options);
-    const s = new stream.Readable();
-    s.push(html);
-    s.push(null);
 
     const factory = new Factory(options);
     const p = new htmlparser2.Parser({
