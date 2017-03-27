@@ -43,6 +43,11 @@ export class Factory {
         return this;
     }
 
+    appendContent() {
+        this.render.append(`fcContent();`);
+        return this;
+    }
+
     append(statement) {
         this.render.append(statement);
         return this;

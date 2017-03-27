@@ -12,7 +12,7 @@ describe('babel', () => {
             if (err) {
                 return done(err);
             }
-            expect(result.code).to.contain(`fcOpenElement('p', ['class', 'foo ' + (el.bar === undefined || el.bar === null ? '' : el.bar)], [], undefined);`);
+            expect(result.code).to.contain(`fcOpenElement('p', ['class', 'foo ' + (el.bar === undefined || el.bar === null ? '' : el.bar)], [], []);`);
             expect(result.code).to.contain(`fcText('Hello');`);
             expect(result.code).to.contain(`fcCloseElement();`);
             done();

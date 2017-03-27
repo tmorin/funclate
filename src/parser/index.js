@@ -1,4 +1,5 @@
 import htmlparser2 from 'htmlparser2';
+import {FcContentTag} from './FcContentTag';
 import {FcEachTag} from './FcEachTag';
 import {FcIfTag} from './FcIfTag';
 import {FcElseTag} from './FcElseTag';
@@ -14,12 +15,14 @@ import {assign, interpolate, toCamelCase} from './utils';
  * @property {FcIfTag} fc-if a if clause implementation
  * @property {FcElseTag} fc-else a else clause implementation
  * @property {FcElseIfTag} fc-if-else a if-else clause implementation
+ * @property {FcElseIfTag} fc-content A funclate's tag to specify a content node.
  */
 const tags = {
     'fc-each': new FcEachTag(),
     'fc-if': new FcIfTag(),
     'fc-else': new FcElseTag(),
-    'fc-else-if': new FcElseIfTag()
+    'fc-else-if': new FcElseIfTag(),
+    'fc-content': new FcContentTag()
 };
 
 /**
@@ -58,7 +61,11 @@ export function parse(html, options) {
             } else {
                 const fcAttrs = Statements.get(options);
                 const fcProps = Statements.get(options);
+                const fcOpts = Statements.get(options);
                 Object.keys(attrs).forEach(attName => {
+                    if (attName === 'fc-content') {
+                        fcOpts.append(`'content', true`);
+                    }
                     const index = attName.indexOf(options.propNamePrefix);
                     let name = attName;
                     let destination = fcAttrs;
@@ -69,9 +76,9 @@ export function parse(html, options) {
                     destination.append(`'${name}', ${interpolate(attrs[attName], options)}`);
                 });
                 if (options.selfClosingElements.indexOf(name) > -1) {
-                    factory.appendVoidElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`);
+                    factory.appendVoidElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`, `[${fcOpts.join(',')}]`);
                 } else {
-                    factory.appendOpenElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`);
+                    factory.appendOpenElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`, `[${fcOpts.join(',')}]`);
                 }
             }
         },

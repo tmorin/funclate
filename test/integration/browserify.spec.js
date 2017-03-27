@@ -12,7 +12,7 @@ describe('browserify', () => {
             if (err) {
                 return done(err);
             }
-            expect(result).to.contain(`fcOpenElement('p', ['class', 'foo ' + (el.bar === undefined || el.bar === null ? '' : el.bar)], [], undefined);`);
+            expect(result).to.contain(`fcOpenElement('p', ['class', 'foo ' + (el.bar === undefined || el.bar === null ? '' : el.bar)], [], []);`);
             expect(result).to.contain(`fcText('Hello');`);
             expect(result).to.contain(`fcCloseElement();`);
             done();
