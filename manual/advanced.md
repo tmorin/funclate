@@ -6,11 +6,11 @@ To open an element the method `openElement()` has to be called first
 and then `closeElement()` has to be called to close the element.
 Between both invocations all other invocations will be related to children, sub-children and so one.
 
-`fcOpenVoidElement()` has to be used for element like 'input', 'br', 'hr' and so one.
+`openVoidElement()` has to be used for element like 'input', 'br', 'hr' and so one.
 
 `text()` has to be used to insert texts.
 
-`fcComment()` has to be used to insert HTML comments.
+`comment()` has to be used to insert HTML comments.
 
 ## Shadow DOM and light DOM
 

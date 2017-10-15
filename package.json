@@ -59,14 +59,15 @@
   "devDependencies": {
     "babel-cli": "^6.24.0",
     "babel-core": "^6.24.0",
-    "babel-loader": "^6.4.1",
+    "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.2.2",
     "browserify-transform-tools": "^1.7.0",
-    "chai": "^3.5.0",
-    "coveralls": "^2.12.0",
-    "esdoc": "^0.5.2",
-    "esdoc-importpath-plugin": "^0.1.1",
-    "istanbul-instrumenter-loader": "^2.0.0",
+    "chai": "^4.1.2",
+    "coveralls": "^3.0.0",
+    "esdoc": "^1.0.3",
+    "esdoc-importpath-plugin": "^1.0.1",
+    "esdoc-standard-plugin": "^1.0.0",
+    "istanbul-instrumenter-loader": "^3.0.0",
     "jshint": "^2.9.4",
     "jshint-stylish": "^2.2.1",
     "json-loader": "^0.5.4",
@@ -80,12 +81,12 @@
     "karma-sinon-chai": "^1.2.4",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.3",
-    "mocha": "^3.2.0",
+    "mocha": "^4.0.1",
     "phantomjs-prebuilt": "^2.1.14",
     "rimraf": "^2.6.1",
-    "sinon": "^2.1.0",
+    "sinon": "^4.0.1",
     "sinon-chai": "^2.9.0",
-    "webpack": "^2.2.1"
+    "webpack": "^3.7.1"
   },
   "babel": {
     "presets": [
