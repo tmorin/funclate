@@ -27,7 +27,7 @@ describe('updateElement()', () => {
             voidElement('input', ['type', 'number']);
             text('after');
         };
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`before<strong class="foo"><!--the tag name-->foo</strong><input type="number">after`);
         expect(el.querySelector('strong').key1).to.be.eq('value1');
     });
@@ -64,33 +64,33 @@ describe('updateElement()', () => {
             closeElement();
         };
 
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`<p>beforebetweenafter!</p>`);
 
         const p = el.querySelector('p');
 
         el.foo = 'foo';
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '2').to.be.eq(`<p>before<strong><!--the tag name--></strong>betweenafter</p>`);
         expect(p, '2 p').to.be.eq(el.querySelector('p'));
 
         const strong = el.querySelector('strong');
 
         el.bar = 'bar';
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '3').to.be.eq(`<p>before<strong><!--the tag name-->bar</strong>between<em>foo</em>after</p>`);
         expect(p, '3 p').to.be.eq(el.querySelector('p'));
         expect(strong, '3 strong').to.be.eq(el.querySelector('strong'));
 
         el.bar = null;
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '4').to.be.eq(`<p>before<strong><!--the tag name--></strong>betweenafter</p>`);
         expect(p, '4 p').to.be.eq(el.querySelector('p'));
         expect(strong, '4 strong').to.be.eq(el.querySelector('strong'));
 
         el.foo = null;
         el.bar = 'bar';
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '5').to.be.eq(`<p>beforebetween<em></em>after!</p>`);
         expect(p, '5 p').to.be.eq(el.querySelector('p'));
     });
@@ -109,11 +109,11 @@ describe('updateElement()', () => {
 
         el.innerHTML = `<strong>foo</strong>`;
 
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`<p>before<fc-content><strong>foo</strong></fc-content>after</p>`);
 
         el.foo = 'bar';
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '2').to.be.eq(`<p>beforebar<fc-content><strong>foo</strong></fc-content>after</p>`);
     });
 
@@ -132,11 +132,11 @@ describe('updateElement()', () => {
 
         el.innerHTML = `<strong>foo</strong>`;
 
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`<p>before<blockquote><strong>foo</strong></blockquote>after</p>`);
 
         el.foo = 'bar';
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '2').to.be.eq(`<p>beforebar<blockquote><strong>foo</strong></blockquote>after</p>`);
     });
 
@@ -160,26 +160,26 @@ describe('updateElement()', () => {
         const div = el.appendChild(document.createElement('div'));
         div.textContent = 'foo';
 
-        updateElement(el, render1);
+        updateElement(render1, el);
         expect(el.innerHTML, '1').to.be.eq(`before1<fc-content><div>foo</div></fc-content>after1`);
 
-        updateElement(div, render2);
+        updateElement(render2, div);
         expect(el.innerHTML, '2').to.be.eq(`before1<fc-content><div>before2<fc-content>foo</fc-content>after2</div></fc-content>after1`);
 
         el.foo = 'foo';
-        updateElement(el, render1);
-        updateElement(div, render2);
+        updateElement(render1, el);
+        updateElement(render2, div);
         expect(el.innerHTML, '3').to.be.eq(`before1foo<fc-content><div>before2<fc-content>foo</fc-content>after2</div></fc-content>after1`);
 
         div.bar = 'bar';
-        updateElement(el, render1);
-        updateElement(div, render2);
+        updateElement(render1, el);
+        updateElement(render2, div);
         expect(el.innerHTML, '4').to.be.eq(`before1foo<fc-content><div>before2<fc-content>foo</fc-content>barafter2</div></fc-content>after1`);
 
         el.foo = null;
         div.bar = null;
-        updateElement(el, render1);
-        updateElement(div, render2);
+        updateElement(render1, el);
+        updateElement(render2, div);
         expect(el.innerHTML, '5').to.be.eq(`before1<fc-content><div>before2<fc-content>foo</fc-content>after2</div></fc-content>after1`);
     });
 
@@ -189,7 +189,7 @@ describe('updateElement()', () => {
             closeElement();
         };
         let spiedCreateElement = spy(el.ownerDocument, 'createElement');
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`<button is="my-button"></button>`);
         expect(spiedCreateElement, '1 createElementStub').to.have.been.calledWith('button', 'my-button');
         spiedCreateElement.restore();
@@ -201,7 +201,7 @@ describe('updateElement()', () => {
             voidElement('br');
         };
 
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`<input type="text"><br>`);
         expect(el.querySelector('input').value, '1').to.be.eq('foo');
     });
@@ -212,7 +212,7 @@ describe('updateElement()', () => {
             comment();
         };
 
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`<!---->`);
         expect(el.childNodes.length, '1').to.be.eq(2);
     });
@@ -225,10 +225,10 @@ describe('updateElement()', () => {
         const render2 = () => {
         };
 
-        updateElement(el, render1);
+        updateElement(render1, el);
         expect(el.innerHTML, '1').to.be.eq(`<p></p>`);
 
-        updateElement(el, render2);
+        updateElement(render2, el);
         expect(el.innerHTML, '1').to.be.eq(``);
     });
 
@@ -252,7 +252,7 @@ describe('updateElement()', () => {
         };
 
         const initialLiList = {};
-        updateElement(el, render);
+        updateElement(render, el);
 
         toArray(el.querySelectorAll('li')).forEach((li, i) => {
             const id = li.dataset.fcKey;
@@ -263,7 +263,7 @@ describe('updateElement()', () => {
         items.shift();
         items.pop();
         items.reverse();
-        updateElement(el, render);
+        updateElement(render, el);
         expect(el.querySelectorAll('li').length, 'count').to.be.eq(Object.keys(initialLiList).length - 2);
         toArray(el.querySelectorAll('li')).forEach(li => {
             const id = li.dataset.fcKey;
@@ -286,13 +286,13 @@ describe('updateElement()', () => {
             closeElement();
         };
 
-        updateElement(el, render1);
+        updateElement(render1, el);
         expect(el.innerHTML, '1').to.be.eq('<p att1="value1" att3="" att4="0" att6="value6"></p>');
 
-        updateElement(el, render2);
+        updateElement(render2, el);
         expect(el.innerHTML, '2').to.be.eq('<p att2="value2" att5="1"></p>');
 
-        updateElement(el, render3);
+        updateElement(render3, el);
         expect(el.innerHTML, '3').to.be.eq('<p></p>');
     });
 
@@ -306,11 +306,11 @@ describe('updateElement()', () => {
             closeElement();
         };
 
-        updateElement(el, render1);
+        updateElement(render1, el);
         let p = el.querySelector('p');
         expect(p.prop1, '1').to.be.eq('val1');
 
-        updateElement(el, render2);
+        updateElement(render2, el);
         expect(p.prop1, '2').to.be.eq(undefined);
     });
 

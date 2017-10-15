@@ -28,15 +28,15 @@ describe('FcIf', () => {
         `;
         const factory = parse(html, {pretty: true});
         el.condition = 'if';
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.textContent.trim(), 'if').to.be.eq('if');
 
         el.condition = 'else-if';
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.textContent.trim(), 'else-if').to.be.eq('else-if');
 
         el.condition = 'else';
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.textContent.trim(), 'else').to.be.eq('else');
     });
 
@@ -51,7 +51,7 @@ describe('FcIf', () => {
             </fc-if>
         `;
         const factory = parse(html, {pretty: true});
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.textContent.trim(), 'else').to.be.eq('else');
     });
 

@@ -5,10 +5,14 @@ import {Statements} from './Statements';
  */
 export class Factory {
 
+    /**
+     * @param {ParserOptions} [options] the options
+     */
     constructor(options) {
         this.options = options;
         this.render = Statements.get(this.options)
-            .append(`var ${options.elVarName || 'el'} = __el__;`);
+            .append(`var ${options.elVarName || 'el'} = __el__;`)
+            .append(`var ${options.ctxVarName || 'ctx'} = __ctx__;`);
         this.wrapper = Statements.get(this.options)
             .append('var fcOpenElement = funclate.openElement;')
             .append('var fcCloseElement = funclate.closeElement;')
@@ -55,7 +59,7 @@ export class Factory {
 
     toFunction() {
         const wrapper = this.wrapper
-            .append('return function (__el__) {')
+            .append('return function (__el__, __ctx__) {')
             .append(this.render.join()).append('}')
             .join();
         if (this.options.output === 'string') {

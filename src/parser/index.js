@@ -1,4 +1,5 @@
 import htmlparser2 from 'htmlparser2';
+import {FcCallTag} from "./FcCallTag";
 import {FcContentTag} from './FcContentTag';
 import {FcEachTag} from './FcEachTag';
 import {FcIfTag} from './FcIfTag';
@@ -17,12 +18,14 @@ import {assign, interpolate, toCamelCase} from './utils';
  * @property {FcElseIfTag} fc-if-else a if-else clause implementation
  * @property {FcElseIfTag} fc-content A funclate's tag to specify a content node.
  */
+
 const tags = {
     'fc-each': new FcEachTag(),
     'fc-if': new FcIfTag(),
     'fc-else': new FcElseTag(),
     'fc-else-if': new FcElseIfTag(),
-    'fc-content': new FcContentTag()
+    'fc-content': new FcContentTag(),
+    'fc-call': new FcCallTag()
 };
 
 /**
@@ -32,14 +35,22 @@ const tags = {
  * @property {boolean} pretty to add <code>\n</code> after between Javascript statements
  * @property {RegExp} interpolation RegExp to inject interpolated values.
  * @property {string} propNamePrefix the prefix value of attribute name to identified properties
+ * @property {string} elVarName the variable name for the element
+ * @property {string} ctxVarName the variable name for the context
  * @property {Array<string>} selfClosingElements The list of self closing elements. (http://www.w3.org/TR/html5/syntax.html#void-elements)
  * @property {BUILT_IN_TAGS} tags The built in and custom tags.
+ */
+
+/**
+ * @type ParserOptions
  */
 const DEFAULT_OPTIONS = {
     output: 'function',
     pretty: false,
     interpolation: /\{\{([\s\S]+?)}}/gm,
     propNamePrefix: '#',
+    elVarName: 'el',
+    ctxVarName: 'ctx',
     selfClosingElements: ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'],
     tags: tags
 };
@@ -82,17 +93,17 @@ export function parse(html, options) {
                 }
             }
         },
-        onclosetag(name, toto) {
+        onclosetag(name) {
             if (options.tags[name]) {
                 options.tags[name].endTag(factory, name);
             } else if (options.selfClosingElements.indexOf(name) < 0) {
                 factory.appendCloseElement();
             }
         },
-        ontext(text){
+        ontext(text) {
             factory.appendText(interpolate(text, options));
         },
-        oncomment(text){
+        oncomment(text) {
             factory.appendComment(interpolate(text, options));
         }
     }, {

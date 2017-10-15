@@ -20,7 +20,7 @@ describe('FcEach', () => {
         const html = `<fc-each fc-items="el.items"><div id="{{ item }}">{{ item }}</div></fc-each>`;
         const factory = parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.querySelectorAll('div').length, '1').to.be.eq(5);
     });
 
@@ -32,7 +32,7 @@ describe('FcEach', () => {
         `;
         const factory = parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.querySelector('div').getAttribute('id'), 'id').to.be.eq('1');
         expect(el.querySelector('div').dataset.i, 'i').to.be.eq('0');
     });
@@ -45,7 +45,7 @@ describe('FcEach', () => {
         `;
         const factory = parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.querySelector('div').getAttribute('id'), 'id').to.be.eq('1');
         expect(el.querySelector('div').dataset.i, 'i').to.be.eq('0');
     });
@@ -58,7 +58,7 @@ describe('FcEach', () => {
         `;
         const factory = parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.querySelector('div').getAttribute('id'), 'id').to.be.eq('1');
         expect(el.querySelector('div').a, 'a').to.be.eq(el.items);
     });
@@ -70,7 +70,7 @@ describe('FcEach', () => {
             </fc-each>
         `;
         const factory = parse(html, {pretty: true});
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.querySelectorAll('div').length, 'length').to.be.eq(0);
     });
 

@@ -25,7 +25,7 @@ describe('parse()', () => {
     it('should parse and render a very simple template', () => {
         const html = '<p>foo<!--comment--></p>';
         const factory = parse(html, {pretty: true});
-        createThenUpdate(el, factory);
+        createThenUpdate(factory, el);
         expect(el.innerHTML, '1').to.be.eq(html);
     });
 
@@ -34,7 +34,7 @@ describe('parse()', () => {
         const factory = parse(html, {pretty: true});
         el.foo = 'foo';
         el.bar = 'bar';
-        createThenUpdate(el, factory);
+        createThenUpdate(factory, el);
         expect(el.innerHTML, '1').to.be.eq('<p>before foo between bar after</p>');
     });
 
@@ -43,11 +43,11 @@ describe('parse()', () => {
         const factory = parse(html, {pretty: true});
         el.foo = 'foo';
         el.bar = 'bar';
-        createThenUpdate(el, factory);
+        createThenUpdate(factory, el);
         expect(el.innerHTML, '1').to.be.eq('<p class="before foo between bar after">content</p>');
 
         el.bar = undefined;
-        createThenUpdate(el, factory);
+        createThenUpdate(factory, el);
         expect(el.innerHTML, '1').to.be.eq('<p class="before foo between  after">content</p>');
     });
 
@@ -56,7 +56,7 @@ describe('parse()', () => {
         const factory = parse(html, {pretty: true});
         el.innerHTML = '<input bar="bar" />';
         el.foo = 'foo';
-        createThenUpdate(el, factory);
+        createThenUpdate(factory, el);
         expect(el.innerHTML, '1').to.be.eq('<input foo="foo">');
     });
 
@@ -64,11 +64,11 @@ describe('parse()', () => {
         const html = '<input #value="{{ el.foo }}" />';
         const factory = parse(html, {pretty: true});
         el.foo = 'foo';
-        createThenUpdate(el, factory);
+        createThenUpdate(factory, el);
         expect(el.querySelectorAll('input').item(0).value, '1').to.be.eq('foo');
 
         el.foo = 'bar';
-        createThenUpdate(el, factory);
+        createThenUpdate(factory, el);
         expect(el.querySelectorAll('input').item(0).value, '2').to.be.eq('bar');
     });
 
@@ -76,7 +76,7 @@ describe('parse()', () => {
         const html = '<input type="date" #value-alt-date="{{ el.foo }}" />';
         const factory = parse(html, {pretty: true});
         el.foo = new Date();
-        createThenUpdate(el, factory);
+        createThenUpdate(factory, el);
         expect(el.querySelectorAll('input').item(0).valueAltDate, '1').to.be.eq(el.foo);
     });
 

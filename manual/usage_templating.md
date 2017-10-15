@@ -38,6 +38,14 @@ By default, properties are identified by the prefix `#`.
 </ul>
 ```
 
+## call another render function
+
+```html
+<ul>
+    <fc-call name="anotherRenderFunction" />
+</ul>
+```
+
 ## element's key
 
 In order to improve the DOM patching process, element can be identified with a key.

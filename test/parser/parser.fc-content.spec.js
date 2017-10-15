@@ -20,7 +20,7 @@ describe('FcContent and fc-content', () => {
         const html = `<fc-content></fc-content>`;
         const factory = parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.__content__, '1').to.be.eq(el.querySelector('fc-content'));
     });
 
@@ -28,7 +28,7 @@ describe('FcContent and fc-content', () => {
         const html = `<div fc-content></div>`;
         const factory = parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
-        updateElement(el, factory(funclate));
+        updateElement(factory(funclate), el);
         expect(el.__content__, '1').to.be.eq(el.querySelector('div'));
     });
 

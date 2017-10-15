@@ -188,22 +188,24 @@ const METHODS = {closeElement, openElement, comment, content, text, voidElement}
 
 /**
  * Update the sub tree of the given root according to a given factory of the render function.
- * @param {!HTMLElement} root the root element
  * @param {!function(fc: object)} factory the render function
+ * @param {!HTMLElement} root the root element
  * @return {function(el: HTMLElement)}  the render function
+ * @param {object} context an optional context
  */
-export function createThenUpdate(root, factory) {
+export function createThenUpdate(factory, root, context = {}) {
     const render = factory(METHODS);
-    updateElement(root, factory(METHODS));
+    updateElement(factory(METHODS), root, context);
     return render;
 }
 
 /**
  * Update the sub tree of the given root according to the given render function.
- * @param {!HTMLElement} root the root element
  * @param {!function(el: HTMLElement)} render the render function
+ * @param {!HTMLElement} root the root element
+ * @param {object} context an optional context
  */
-export function updateElement(root, render) {
+export function updateElement(render, root, context = {}) {
     const ctx = getCtx();
 
     rootElement = root;
@@ -218,7 +220,7 @@ export function updateElement(root, render) {
         }
     }
 
-    render(root);
+    render(root, context);
 
     cleanRemainingNodes();
     clearIndex();
