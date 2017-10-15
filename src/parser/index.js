@@ -1,5 +1,5 @@
 import htmlparser2 from 'htmlparser2';
-import {FcCallTag} from "./FcCallTag";
+import {FcCallTag} from './FcCallTag';
 import {FcContentTag} from './FcContentTag';
 import {FcEachTag} from './FcEachTag';
 import {FcIfTag} from './FcIfTag';
