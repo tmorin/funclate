@@ -74,17 +74,22 @@ export function parse(html, options) {
                 const fcProps = Statements.get(options);
                 const fcOpts = Statements.get(options);
                 Object.keys(attrs).forEach(attName => {
-                    if (attName === 'fc-content') {
+                    if (attName === 'fc-key') {
+                        fcOpts.append(`'key', ${interpolate(attrs[attName], options)}`);
+                    } else if (attName === 'fc-content') {
                         fcOpts.append(`'content', true`);
+                    } else {
+                        let name = attName;
+                        let destination = fcAttrs;
+
+                        const index = attName.indexOf(options.propNamePrefix);
+                        if (index > -1) {
+                            name = toCamelCase(attName.substring(index + 1));
+                            destination = fcProps;
+                        }
+
+                        destination.append(`'${name}', ${interpolate(attrs[attName], options)}`);
                     }
-                    const index = attName.indexOf(options.propNamePrefix);
-                    let name = attName;
-                    let destination = fcAttrs;
-                    if (index > -1) {
-                        name = toCamelCase(attName.substring(index + 1));
-                        destination = fcProps;
-                    }
-                    destination.append(`'${name}', ${interpolate(attrs[attName], options)}`);
                 });
                 if (options.selfClosingElements.indexOf(name) > -1) {
                     factory.appendVoidElement(name, `[${fcAttrs.join(',')}]`, `[${fcProps.join(',')}]`, `[${fcOpts.join(',')}]`);

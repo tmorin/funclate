@@ -80,4 +80,12 @@ describe('parse()', () => {
         expect(el.querySelectorAll('input').item(0).valueAltDate, '1').to.be.eq(el.foo);
     });
 
+    it('should detect key', () => {
+        const html = '<div fc-key="{{ el.foo }}"></div>';
+        const factory = parse(html, {pretty: true});
+        el.foo = Date.now();
+        createThenUpdate(factory, el);
+        expect(el.querySelector('div').dataset.fcKey, '1').to.be.eq(el.foo + '');
+    });
+
 });
