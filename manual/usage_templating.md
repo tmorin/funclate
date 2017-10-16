@@ -42,7 +42,7 @@ By default, properties are identified by the prefix `#`.
 
 ```html
 <ul>
-    <fc-call name="anotherRenderFunction" />
+    <fc-call fc-name="anotherRenderFunction" />
 </ul>
 ```
 

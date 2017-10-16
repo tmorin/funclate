@@ -17,7 +17,7 @@ describe('FcCall and fc-call', () => {
     });
 
     it('should work', () => {
-        const html1 = `<fc-call name="ctx.embeddedRender"/>`;
+        const html1 = `<fc-call fc-name="ctx.embeddedRender"/>`;
         const factory1 = parse(html1, {pretty: true});
 
         const html2 = '<p class="foo {{ el.bar }}"></p>';
@@ -28,6 +28,20 @@ describe('FcCall and fc-call', () => {
         });
 
         expect(el.outerHTML, '1').to.be.eq('<div><p class="foo "></p></div>');
+    });
+
+    it('should ignore', () => {
+        const html1 = `<fc-call name="ctx.embeddedRender"/>`;
+        const factory1 = parse(html1, {pretty: true});
+
+        const html2 = '<p class="foo {{ el.bar }}"></p>';
+        const factory2 = parse(html2, {pretty: true});
+
+        updateElement(factory1(funclate), el, {
+            embeddedRender: factory2(funclate)
+        });
+
+        expect(el.outerHTML, '1').to.be.eq('<div></div>');
     });
 
 });
