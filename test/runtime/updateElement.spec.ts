@@ -1,4 +1,5 @@
 /*jshint -W030 */
+import {expect} from 'chai';
 import {spy} from 'sinon';
 import {closeElement, comment, content, openElement, text, updateElement, voidElement} from '../../src/runtime';
 
@@ -191,7 +192,7 @@ describe('updateElement()', () => {
         let spiedCreateElement = spy(el.ownerDocument, 'createElement');
         updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`<button is="my-button"></button>`);
-        expect(spiedCreateElement, '1 createElementStub').to.have.been.calledWith('button', 'my-button');
+        expect(spiedCreateElement.calledWith('button', 'my-button'), '1 createElementStub').to.be.true;
         spiedCreateElement.restore();
     });
 

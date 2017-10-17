@@ -1,4 +1,5 @@
 /*jshint -W030 */
+import {expect} from 'chai';
 import {parse} from '../../src/parser';
 import * as funclate from '../../src/runtime';
 import {updateElement} from '../../src/runtime';
@@ -18,7 +19,7 @@ describe('FcEach', () => {
 
     it('should iterate', () => {
         const html = `<fc-each fc-items="el.items"><div id="{{ item }}">{{ item }}</div></fc-each>`;
-        const factory = parse(html, {pretty: true});
+        const factory = <Function> parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
         updateElement(factory(funclate), el);
         expect(el.querySelectorAll('div').length, '1').to.be.eq(5);
@@ -30,7 +31,7 @@ describe('FcEach', () => {
                 <div id="{{ row }}" data-i="{{ index }}">{{ row }}</div>
             </fc-each>
         `;
-        const factory = parse(html, {pretty: true});
+        const factory = <Function> parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
         updateElement(factory(funclate), el);
         expect(el.querySelector('div').getAttribute('id'), 'id').to.be.eq('1');
@@ -43,7 +44,7 @@ describe('FcEach', () => {
                 <div id="{{ item }}" data-i="{{ i }}">{{ item }}</div>
             </fc-each>
         `;
-        const factory = parse(html, {pretty: true});
+        const factory = <Function> parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
         updateElement(factory(funclate), el);
         expect(el.querySelector('div').getAttribute('id'), 'id').to.be.eq('1');
@@ -56,7 +57,7 @@ describe('FcEach', () => {
                 <div id="{{ item }}" #a="{{ a }}">{{ item }}</div>
             </fc-each>
         `;
-        const factory = parse(html, {pretty: true});
+        const factory = <Function> parse(html, {pretty: true});
         el.items = [1, 2, 3, 4, 5];
         updateElement(factory(funclate), el);
         expect(el.querySelector('div').getAttribute('id'), 'id').to.be.eq('1');
@@ -69,7 +70,7 @@ describe('FcEach', () => {
                 <div id="{{ item }}" data-i="{{ index }}">{{ item }}</div>
             </fc-each>
         `;
-        const factory = parse(html, {pretty: true});
+        const factory = <Function> parse(html, {pretty: true});
         updateElement(factory(funclate), el);
         expect(el.querySelectorAll('div').length, 'length').to.be.eq(0);
     });

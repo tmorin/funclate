@@ -1,18 +1,21 @@
+import {ParserOptions, RenderFactory} from './model';
 import {Statements} from './Statements';
 
-/**
- * @private
- */
 export class Factory {
 
-    /**
-     * @param {ParserOptions} [options] the options
-     */
-    constructor(options) {
+    private options: { [k: string]: any };
+
+    private render: Statements;
+
+    private wrapper: Statements;
+
+    constructor(options: ParserOptions) {
         this.options = options;
+
         this.render = Statements.get(this.options)
             .append(`var ${options.elVarName || 'el'} = __el__;`)
             .append(`var ${options.ctxVarName || 'ctx'} = __ctx__;`);
+
         this.wrapper = Statements.get(this.options)
             .append('var fcOpenElement = funclate.openElement;')
             .append('var fcCloseElement = funclate.closeElement;')
@@ -22,42 +25,42 @@ export class Factory {
             .append('var fcComment = funclate.comment;');
     }
 
-    appendOpenElement(name, attrs, props, opts) {
+    public appendOpenElement(name: string, attrs: string, props: string, opts: string) {
         this.render.append(`fcOpenElement('${name}', ${attrs}, ${props}, ${opts});`);
         return this;
     }
 
-    appendCloseElement() {
+    public appendCloseElement() {
         this.render.append(`fcCloseElement();`);
         return this;
     }
 
-    appendVoidElement(name, attrs, props, opts) {
+    public appendVoidElement(name: string, attrs: string, props: string, opts: string) {
         this.render.append(`fcVoidElement('${name}', ${attrs}, ${props}, ${opts});`);
         return this;
     }
 
-    appendText(text) {
+    public appendText(text: string) {
         this.render.append(`fcText(${text});`);
         return this;
     }
 
-    appendComment(text) {
+    public appendComment(text: string) {
         this.render.append(`fcComment(${text});`);
         return this;
     }
 
-    appendContent() {
+    public appendContent() {
         this.render.append(`fcContent();`);
         return this;
     }
 
-    append(statement) {
+    public append(statement: string) {
         this.render.append(statement);
         return this;
     }
 
-    toFunction() {
+    public toFunction(): RenderFactory | string {
         const wrapper = this.wrapper
             .append('return function (__el__, __ctx__) {')
             .append(this.render.join()).append('}')
@@ -65,6 +68,6 @@ export class Factory {
         if (this.options.output === 'string') {
             return `function (funclate) {${wrapper}}`;
         }
-        return new Function('funclate', wrapper);
+        return new Function('funclate', wrapper) as RenderFactory;
     }
 }

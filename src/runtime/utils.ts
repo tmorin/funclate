@@ -37,7 +37,6 @@ export function fromArrayToObject(array) {
     return object;
 }
 
-
 /**
  * According to the given parent, try to find a node matching with the given key.
  * @param {!Element} parent the parent element
@@ -64,12 +63,12 @@ export function findNodeFromKey(parent, from, key) {
  */
 export function updateAttributes(element, attributes) {
     attributes = attributes ? attributes : [];
-    let updatedAttributes = {};
-    let max = attributes.length;
+    const updatedAttributes = {};
+    const max = attributes.length;
     for (let i = 0; i < max; i = i + 2) {
-        let name = attributes[i];
-        let value = attributes[i + 1];
-        let type = typeof value;
+        const name = attributes[i];
+        const value = attributes[i + 1];
+        const type = typeof value;
         if (type === 'boolean') {
             if (value) {
                 element.setAttribute(name, '');
@@ -84,9 +83,10 @@ export function updateAttributes(element, attributes) {
         }
     }
     toArray(element.attributes)
-        .filter(attr => !updatedAttributes[attr.name])
-        .forEach(attr => element.removeAttribute(attr.name));
+        .filter((attr) => !updatedAttributes[attr.name])
+        .forEach((attr) => element.removeAttribute(attr.name));
 }
+
 /**
  * Update the given element's properties according to the new one.
  * @param {!Element} element the element
@@ -95,15 +95,15 @@ export function updateAttributes(element, attributes) {
  */
 export function updateProperties(element, properties) {
     properties = properties ? properties : [];
-    let updatedProperties = {};
-    let max = properties.length;
+    const updatedProperties = {};
+    const max = properties.length;
     for (let i = 0; i < max; i = i + 2) {
-        let name = properties[i];
+        const name = properties[i];
         element[name] = properties[i + 1];
         updatedProperties[name] = true;
     }
     toArray(element.updatedProperties)
-        .filter(name => !updatedProperties[name])
-        .forEach(name => element[name] = undefined);
+        .filter((name) => !updatedProperties[name])
+        .forEach((name) => element[name] = undefined);
     element.updatedProperties = Object.keys(updatedProperties);
 }

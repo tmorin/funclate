@@ -1,5 +1,5 @@
 import {parse} from '../parser';
-import loaderUtils from 'loader-utils';
+import loaderUtils = require('loader-utils');
 
 /**
  * @ignore

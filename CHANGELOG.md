@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.0.x
+## 0.2.x
+
+- switch to typescript
+- review documentation
+
+## 0.0.x - 0.1.x
 
 - handle element node
 - handle text node

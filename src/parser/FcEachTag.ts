@@ -1,4 +1,6 @@
+import {Factory} from './Factory';
 import {FcTag} from './FcTag';
+import {Map} from './model';
 
 /**
  * A funclate's tag implementing a forEach loop.
@@ -8,10 +10,8 @@ import {FcTag} from './FcTag';
  * </fc-each>
  */
 export class FcEachTag extends FcTag {
-    /**
-     * @override FcTag#startTag
-     */
-    startTag(factory, name, attributes, selfClosing) {
+
+    public startTag(factory: Factory, name: string, attributes: Map<string>) {
         const itemsVar = attributes['fc-items'] ? attributes['fc-items'] : '[]';
         const itemVar = attributes['fc-item'] ? attributes['fc-item'] : 'item';
         const indexVar = attributes['fc-index'] ? attributes['fc-index'] : 'index';
@@ -19,10 +19,8 @@ export class FcEachTag extends FcTag {
         factory.append(`${itemsVar}.forEach(function (${itemVar}, ${indexVar}, ${allVar}) {`);
     }
 
-    /**
-     * @override FcTag#endTag
-     */
-    endTag(factory, name) {
+    public endTag(factory: Factory, name: string) {
         factory.append('});');
     }
+
 }

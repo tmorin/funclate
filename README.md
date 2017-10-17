@@ -47,7 +47,15 @@ var template = function (funclate) {
 fc.updateElement(body, template(fc));
 ```
 
-Learn more browsing [the manual](http://tmorin.github.io/funclate)!
+## Manual
+
+- [Installation](manual/installation.md)
+- [Overview](manual/overview.md)
+- Usage
+ - [Templating](manual/usage_templating.md)
+ - [Runtime](manual/usage_runtime.md)
+- [Advanced](manual/advanced.md)
+- [API](http://tmorin.github.io/funclate)
 
 ## License
 

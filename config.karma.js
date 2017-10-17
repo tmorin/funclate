@@ -2,10 +2,13 @@ const path = require('path');
 const webpack = require('webpack');
 
 const webpackConfig = {
+    resolve: {
+        extensions: ['.ts', '.js', '.tsx', '.jsx']
+    },
     module: {
         rules: [{
-            test: /\.js$/,
-            loader: 'babel-loader',
+            test: /\.ts$/,
+            loader: 'ts-loader',
             exclude: /node_modules/
         }, {
             test: /\.json$/,
@@ -15,7 +18,7 @@ const webpackConfig = {
     plugins: [
         new webpack.SourceMapDevToolPlugin({
             filename: null,
-            test: /\.(js)($|\?)/i
+            test: /\.(ts)($|\?)/i
         })
     ]
 };
@@ -23,7 +26,7 @@ module.exports = function (config) {
     let reporters = ['progress'];
     if (process.env.COVERAGE) {
         webpackConfig.module.rules.push({
-            test: /src\/.+\.js$/,
+            test: /src\/.+\.ts$/,
             exclude: /(node_modules|\.spec\.ts$)/,
             loader: 'istanbul-instrumenter-loader',
             enforce: 'post'
@@ -38,20 +41,20 @@ module.exports = function (config) {
         //browsers: ['Firefox'],
         //browsers: ['PhantomJS', 'Firefox'],
 
-        frameworks: ['mocha', 'sinon-chai'],
+        frameworks: ['mocha'],
 
         singleRun: true,
 
         reporters: reporters,
 
         files: [
-            'test/runtime/*.spec.js',
-            'test/parser/*.spec.js'
+            'test/runtime/*.spec.ts',
+            'test/parser/*.spec.ts'
         ],
 
         preprocessors: {
-            'test/runtime/*.spec.js': ['webpack', 'sourcemap'],
-            'test/parser/*.spec.js': ['webpack', 'sourcemap']
+            'test/runtime/*.spec.ts': ['webpack', 'sourcemap'],
+            'test/parser/*.spec.ts': ['webpack', 'sourcemap']
         },
 
         client: {

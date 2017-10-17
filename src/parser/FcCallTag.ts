@@ -1,4 +1,6 @@
+import {Factory} from './Factory';
 import {FcTag} from './FcTag';
+import {Map} from './model';
 
 /**
  * A funclate's tag to call another funclate's render function.
@@ -6,13 +8,12 @@ import {FcTag} from './FcTag';
  * <fc-call fc-name="ctx.anotherRenderFunction"></fc-call>
  */
 export class FcCallTag extends FcTag {
-    /**
-     * @override FcTag#startTag
-     */
-    startTag(factory, name, attributes, selfClosing) {
-        let fnName = attributes['fc-name'];
+
+    public startTag(factory: Factory, name: string, attributes: Map<string>) {
+        const fnName = attributes['fc-name'];
         if (fnName) {
             factory.append(`${fnName}(__el__, __ctx__);`);
         }
     }
+
 }

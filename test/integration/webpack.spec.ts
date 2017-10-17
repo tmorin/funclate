@@ -1,6 +1,6 @@
 import {join} from 'path';
 import {existsSync, readFileSync, unlinkSync} from 'fs';
-import webpack from 'webpack';
+import webpack = require('webpack');
 import {expect} from 'chai';
 
 describe('webpack', () => {
@@ -25,7 +25,7 @@ describe('webpack', () => {
             module: {
                 rules: [
                     {test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/},
-                    {test: /\.fc$/, loader: './src/integration/webpack'}
+                    {test: /\.fc$/, loader: './lib/integration/webpack'}
                 ]
             },
             resolve: {

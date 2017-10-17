@@ -1,4 +1,6 @@
+import {Factory} from './Factory';
 import {FcTag} from './FcTag';
+import {Map} from './model';
 
 /**
  * A funclate's tag implementing a else clause.
@@ -10,12 +12,9 @@ import {FcTag} from './FcTag';
  * </fc-if>
  */
 export class FcElseTag extends FcTag {
-    /**
-     * @override FcTag#startTag
-     */
-    startTag(factory, name, attributes, selfClosing) {
+
+    public startTag(factory: Factory, name: string, attributes: Map<string>) {
         factory.append(`} else {`);
     }
 
 }
-

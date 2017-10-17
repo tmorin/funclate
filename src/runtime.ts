@@ -1,53 +1,38 @@
-import {findNodeFromKey, fromArrayToObject, sanitize, updateAttributes, updateProperties} from './utils';
+import {Funclate, Map, RenderFactory, RenderFunction} from './parser/model';
+import {Context, ElementOptions, NodeFactory, ParentElement, RootElement} from './runtime/model';
+import {findNodeFromKey, fromArrayToObject, sanitize, updateAttributes, updateProperties} from './runtime/utils';
 
 /**
  * The current root element, i.e. where the starting point of the updateElement function.
  * @type {Element}
  */
-let rootElement = null;
+let rootElement: RootElement = null;
 
 /**
  * The current document owning the current root element
  * @type {Document}
  */
-let rootDocument = null;
+let rootDocument: Document = null;
 
 /**
  * The current parent element of the processed instruction.
  * @type {Element}
  */
-let parentElement = null;
-
-/**
- * @typedef {object} Context
- * @property {Element} root the root element
- * @property {Element} parent the parent element
- * @property {Document} document the document owning the root element
- * @private
- */
-
-/**
- * @typedef {object} ElementOptions
- * @property {boolean} content if true the element will be the entry of the light DOM structure
- * @property {string} key the element's key
- * @property {boolean} skipChildren if true the children's element won't be parsed
- * @property {Node} found will be used as current node
- * @private
- */
+let parentElement: ParentElement = null;
 
 /**
  * Build a context object.
  * @return {Context} the context
  */
-function getCtx() {
+function getCtx(): Context {
     return {root: rootElement, parent: parentElement, document: rootDocument};
 }
 
 /**
  * Restore a context object.
- * @param {!Context} ctx the context to restore
+ * @param {Context} ctx the context to restore
  */
-function restoreCtx(ctx) {
+function restoreCtx(ctx: Context): void {
     rootElement = ctx.root;
     parentElement = ctx.parent;
     rootDocument = ctx.document;
@@ -56,7 +41,7 @@ function restoreCtx(ctx) {
 /**
  * Remove the un-visited nodes.
  */
-function cleanRemainingNodes() {
+function cleanRemainingNodes(): void {
     if (rootElement.__content__ !== parentElement) {
         while (parentElement.childNodes.length > lastIndex()) {
             parentElement.removeChild(parentElement.lastChild);
@@ -66,42 +51,42 @@ function cleanRemainingNodes() {
 
 /**
  * Get and increment the fcIndex property of the current parent.
- * @return {number} the index
+ * @return the index
  */
-function nextIndex() {
+function nextIndex(): number {
     if (!parentElement.fcIndex) {
         parentElement.fcIndex = 0;
     }
-    let index = parentElement.fcIndex;
+    const index = parentElement.fcIndex;
     parentElement.fcIndex = parentElement.fcIndex + 1;
     return index;
 }
 
 /**
  * Get fcIndex property of the current parent.
- * @return {number} the index
+ * @return the index
  */
-function lastIndex() {
+function lastIndex(): number {
     return parentElement.fcIndex || 0;
 }
 
 /**
  * Clear the fcIndex property of the current parent.
  */
-function clearIndex() {
+function clearIndex(): void {
     delete parentElement.fcIndex;
 }
 
 /**
  * Handle a Node.
- * @param {!string} value the node's value
- * @param {!number} nodeType the node's type
- * @param {!function(value: string): Node} factory the factory creating the node when necessary
+ * @param {string} value the node's value
+ * @param {number} nodeType the node's type
+ * @param {NodeFactory} factory the factory creating the node when necessary
  * @return {Node} the handled node
  */
-function handleNode(value, nodeType, factory) {
+function handleNode(value: string, nodeType: number, factory: NodeFactory): Node {
     const index = nextIndex();
-    let current = parentElement.childNodes.item(index);
+    const current = parentElement.childNodes.item(index);
 
     if (current) {
         if (current.nodeType !== nodeType) {
@@ -118,26 +103,28 @@ function handleNode(value, nodeType, factory) {
 
 /**
  * Create an element
- * @param {!string} name the name
- * @param {Object.<string, string|number|boolean>} attrs the attributes
- * @return {Element} the element
+ * @param {string} name the name
+ * @param {string[]} attrs the attributes
+ * @return {HTMLElement} the element
  */
-function createElement(name, attrs) {
-    let index = attrs ? attrs.indexOf('is') : -1;
-    return index > -1 ? rootDocument.createElement(name, attrs[index + 1]) : rootDocument.createElement(name);
+function createElement(name: string, attrs: string[]): HTMLElement {
+    const index = attrs ? attrs.indexOf('is') : -1;
+    return index > -1
+        ? rootDocument.createElement.apply(rootDocument, [name, attrs[index + 1]])
+        : rootDocument.createElement(name);
 }
 
 /**
- * Handle a {Element}.
- * @param {!string} name the name of the element
- * @param {Array} [attrs] the attributes of the element
- * @param {Array}  [props] the properties of the element
- * @param {ElementOptions} [opts] the options driving the creation of the element
- * @return {Element} the handled element
+ * Handle an element.
+ * @param {string} name the name
+ * @param {any[]} attrs the attributes
+ * @param {any[]} props the properties
+ * @param {ElementOptions} opts the options
+ * @return {HTMLElement} the handled element
  */
-function handleElement(name, attrs, props, opts) {
+function handleElement(name: string, attrs: any[], props: any[], opts: ElementOptions): HTMLElement {
     const index = nextIndex();
-    let current = parentElement.childNodes.item(index);
+    let current = parentElement.childNodes.item(index) as HTMLElement;
 
     let found = opts.found ? opts.found : null;
     if (!found && opts.key) {
@@ -146,13 +133,12 @@ function handleElement(name, attrs, props, opts) {
 
     if (found) {
         if (current !== found) {
-            current = parentElement.insertBefore(found, current);
+            current = parentElement.insertBefore(found, current) as HTMLElement;
         }
     } else if (current) {
         if (name.toLowerCase() !== (current.tagName || '').toLowerCase()) {
             current = parentElement.insertBefore(
-                createElement(name, attrs),
-                current
+                createElement(name, attrs), current
             );
         }
     } else {
@@ -179,33 +165,37 @@ function handleElement(name, attrs, props, opts) {
     return current;
 }
 
-/**
- * List all methods.
- * This object should be used as argument of factories of render functions.
- * @type {{closeElement: closeElement, openElement: openElement, comment: comment, content: content, text: text, voidElement: voidElement}}
- */
-const METHODS = {closeElement, openElement, comment, content, text, voidElement};
+const funclate: Funclate = {
+    closeElement,
+    comment,
+    content,
+    createThenUpdate,
+    openElement,
+    text,
+    updateElement,
+    voidElement
+};
 
 /**
  * Update the sub tree of the given root according to a given factory of the render function.
- * @param {!function(fc: object)} factory the render function
- * @param {!HTMLElement} root the root element
- * @return {function(el: HTMLElement)}  the render function
- * @param {object} context an optional context
+ * @param {RenderFactory} factory the render factory
+ * @param {HTMLElement} root the root element
+ * @param {Map<any>} context the context
+ * @return {RenderFunction} the render function
  */
-export function createThenUpdate(factory, root, context = {}) {
-    const render = factory(METHODS);
-    updateElement(factory(METHODS), root, context);
+export function createThenUpdate(factory: RenderFactory, root: HTMLElement, context: Map<any> = {}): RenderFunction {
+    const render = factory(funclate);
+    updateElement(factory(funclate), root, context);
     return render;
 }
 
 /**
  * Update the sub tree of the given root according to the given render function.
- * @param {!function(el: HTMLElement)} render the render function
- * @param {!HTMLElement} root the root element
- * @param {object} context an optional context
+ * @param {RenderFunction} render the render function
+ * @param {RootElement} root the root element
+ * @param {Context} context the context
  */
-export function updateElement(render, root, context = {}) {
+export function updateElement(render: RenderFunction, root: RootElement, context: Map<any> = {}): void {
     const ctx = getCtx();
 
     rootElement = root;
@@ -253,13 +243,13 @@ export function updateElement(render, root, context = {}) {
  * openElement('li', null, null, ['key', 'my-li'])
  * closeElement();
  *
- * @param {!string} name the name of the element
- * @param {Array.<undefined|null|string|number|boolean>} [attrs] the attributes of the element
- * @param {Array} [props] the properties of the element
- * @param {Array} [opts] the options driving the creation of the element, c.f. {@link ElementOptions}
- * @return {Element} the element
+ * @param {string} name the name of the element
+ * @param {any[]} attrs the attributes of the element
+ * @param {any[]} props the properties of the element
+ * @param {any[]} opts the options driving the creation of the element, c.f. {@link ElementOptions}
+ * @return {HTMLElement} the element
  */
-export function openElement(name, attrs, props, opts) {
+export function openElement(name: string, attrs: any[] = [], props: any[] = [], opts: any[] = []): HTMLElement {
     return handleElement(
         name,
         attrs,
@@ -271,7 +261,7 @@ export function openElement(name, attrs, props, opts) {
 /**
  * Close the current element.
  */
-export function closeElement() {
+export function closeElement(): void {
     cleanRemainingNodes();
     clearIndex();
     parentElement = parentElement.parentElement;
@@ -279,13 +269,13 @@ export function closeElement() {
 
 /**
  * Open and close a void element.
- * @param {!string} name the name of the element
- * @param {Array.<undefined|null|string|number|boolean>} [attrs] the attributes of the element
- * @param {Array} [props] the properties of the element
- * @param {Array} [opts] the options driving the creation of the element, c.f. {@link ElementOptions}
- * @return {Element} the element
+ * @param {string} name the name of the element
+ * @param {string[]} attrs the attributes of the element
+ * @param {any[]} props the properties of the element
+ * @param {any[]} opts the options driving the creation of the element, c.f. {@link ElementOptions}
+ * @return {HTMLElement} the element
  */
-export function voidElement(name, attrs, props, opts) {
+export function voidElement(name: string, attrs: string[] = [], props: any[] = [], opts: any[] = []): HTMLElement {
     return handleElement(
         name,
         attrs,
@@ -298,45 +288,45 @@ export function voidElement(name, attrs, props, opts) {
  * To add a <code><fc-content></fc-content></code> node.
  * This node will be used to locate the entry of the light DOM structure.
  */
-export function content() {
+export function content(): void {
     rootElement.__content__ = handleElement('fc-content', null, null, {
-        skipChildren: true,
-        found: rootElement.__content__
+        found: rootElement.__content__,
+        skipChildren: true
     });
 }
 
 /**
  * Create a text node.
- * @param {string} [value] the node value
- * @returns {Text}
+ * @param {string} value the node value
+ * @returns {Text} the text
  */
-function textNodeFactory(value) {
+function textNodeFactory(value: string = ''): Text {
     return rootDocument.createTextNode(sanitize(value));
 }
 
 /**
  * Create a text node.
- * @param {string} [value] the node value
- * @returns {Comment}
+ * @param {string} value the comment value
+ * @returns {Comment} the comment
  */
-function commentFactory(value) {
+function commentFactory(value = ''): Comment {
     return rootDocument.createComment(sanitize(value));
 }
 
 /**
  * To write a text node.
- * @param {string} [text] the text
+ * @param {string} value the text
  * @return {Node} the text node
  */
-export function text(text) {
-    return handleNode(text, rootElement.TEXT_NODE, textNodeFactory);
+export function text(value: string = ''): Text {
+    return handleNode(value, rootElement.TEXT_NODE, textNodeFactory) as Text;
 }
 
 /**
  * To write a comment node.
- * @param {string} [text] the comment
+ * @param {string} value the comment
  * @return {Node} the comment node
  */
-export function comment(text) {
-    return handleNode(text, rootElement.COMMENT_NODE, commentFactory);
+export function comment(value: string = ''): Comment {
+    return handleNode(value, rootElement.COMMENT_NODE, commentFactory) as Comment;
 }

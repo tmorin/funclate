@@ -1,4 +1,4 @@
-import babelFunclate from '../../src/integration/babel.js';
+import babelFunclate from '../../src/integration/babel';
 import {expect} from 'chai';
 const babel = require('babel-core');
 

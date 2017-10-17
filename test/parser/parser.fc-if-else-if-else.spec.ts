@@ -1,4 +1,5 @@
 /*jshint -W030 */
+import {expect} from 'chai';
 import {parse} from '../../src/parser';
 import * as funclate from '../../src/runtime';
 import {updateElement} from '../../src/runtime';
@@ -26,7 +27,7 @@ describe('FcIf', () => {
                 else
             </fc-if>
         `;
-        const factory = parse(html, {pretty: true});
+        const factory = <Function> parse(html, {pretty: true});
         el.condition = 'if';
         updateElement(factory(funclate), el);
         expect(el.textContent.trim(), 'if').to.be.eq('if');
@@ -50,7 +51,7 @@ describe('FcIf', () => {
                 else
             </fc-if>
         `;
-        const factory = parse(html, {pretty: true});
+        const factory = <Function> parse(html, {pretty: true});
         updateElement(factory(funclate), el);
         expect(el.textContent.trim(), 'else').to.be.eq('else');
     });

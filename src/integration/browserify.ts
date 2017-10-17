@@ -1,5 +1,5 @@
-import {parse} from '../parser';
 import {makeStringTransform} from 'browserify-transform-tools';
+import {parse} from '../parser';
 
 const options = {
     includeExtensions: ['.funclate', '.fc']
