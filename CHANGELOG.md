@@ -4,6 +4,7 @@
 
 - switch to typescript
 - review documentation
+- tag and attributes handlers can customized
 
 ## 0.0.x - 0.1.x
 
