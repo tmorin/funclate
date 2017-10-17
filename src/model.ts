@@ -1,31 +1,17 @@
-import {FcTag} from './FcTag';
-
 export interface Map<V> {
     [type: string]: V
 }
 
-export interface Tags extends Map<FcTag> {
+export interface RenderFunction {
+    (el: HTMLElement, ctx: any): void
 }
 
-export interface ParserOptions {
-    output?: string;
-
-    pretty?: boolean;
-
-    interpolation?: RegExp;
-
-    propNamePrefix?: string;
-
-    elVarName?: string;
-
-    ctxVarName?: string;
-
-    selfClosingElements?: string[];
-
-    tags?: Tags;
+export interface RenderFactory {
+    (funclate: Funclate): RenderFunction
 }
 
 export interface Funclate {
+
     openElement: (name: string, attrs?: any[], props?: any[], opts?: any[]) => HTMLElement;
 
     closeElement: () => void;
@@ -41,12 +27,5 @@ export interface Funclate {
     createThenUpdate: (factory: RenderFactory, root: HTMLElement, context?: Map<any>) => RenderFunction;
 
     updateElement: (render: RenderFunction, root: HTMLElement, context?: Map<any>) => void;
-}
 
-export interface RenderFunction {
-    (el: HTMLElement, ctx: Map<any>): void
-}
-
-export interface RenderFactory {
-    (funclate: any): RenderFunction
 }

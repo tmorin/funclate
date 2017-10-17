@@ -1,5 +1,6 @@
-import babelFunclate from '../../src/integration/babel';
 import {expect} from 'chai';
+import babelFunclate from '../../src/integration/babel';
+
 const babel = require('babel-core');
 
 describe('babel', () => {

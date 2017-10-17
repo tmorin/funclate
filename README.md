@@ -52,8 +52,8 @@ fc.updateElement(body, template(fc));
 - [Installation](manual/installation.md)
 - [Overview](manual/overview.md)
 - Usage
- - [Templating](manual/usage_templating.md)
- - [Runtime](manual/usage_runtime.md)
+  - [Templating](manual/usage_templating.md)
+  - [Runtime](manual/usage_runtime.md)
 - [Advanced](manual/advanced.md)
 - [API](http://tmorin.github.io/funclate)
 

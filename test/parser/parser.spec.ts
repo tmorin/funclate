@@ -1,8 +1,8 @@
 /*jshint -W030 */
 import {expect} from 'chai';
+import {RenderFactory} from '../../src/model';
 import {parse} from '../../src/parser';
 import {createThenUpdate} from '../../src/runtime';
-import {RenderFactory} from '../../src/parser/model';
 
 describe('parse()', () => {
     let el;

@@ -1,7 +1,7 @@
-import {join} from 'path';
-import idomizerify from '../../src/integration/browserify';
 import {runTransform} from 'browserify-transform-tools';
 import {expect} from 'chai';
+import {join} from 'path';
+import idomizerify from '../../src/integration/browserify';
 
 describe('browserify', () => {
 

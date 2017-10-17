@@ -1,7 +1,7 @@
-import {join} from 'path';
-import {existsSync, readFileSync, unlinkSync} from 'fs';
-import webpack = require('webpack');
 import {expect} from 'chai';
+import {existsSync, readFileSync, unlinkSync} from 'fs';
+import {join} from 'path';
+import webpack = require('webpack');
 
 describe('webpack', () => {
     let context = join(__dirname, '../../'),

@@ -1,4 +1,4 @@
-import {ParserOptions} from './model';
+import {ParserOptions} from './ParserOptions';
 
 /**
  * Assign to the first objects the following

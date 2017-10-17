@@ -1,4 +1,4 @@
-import {ParserOptions} from './model';
+import {ParserOptions} from './ParserOptions';
 
 export class Statements {
 
@@ -7,7 +7,6 @@ export class Statements {
     }
 
     private options: ParserOptions;
-
     private statements: string[];
 
     constructor(options: ParserOptions) {
@@ -26,4 +25,5 @@ export class Statements {
         }
         return this.statements.join(this.options.pretty ? '\n' : '');
     }
+
 }

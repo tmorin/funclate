@@ -1,4 +1,3 @@
-/*jshint -W030 */
 import {expect} from 'chai';
 import {parse} from '../../src/parser';
 import * as funclate from '../../src/runtime';

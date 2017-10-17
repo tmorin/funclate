@@ -1,4 +1,3 @@
-/*jshint -W030 */
 import {expect} from 'chai';
 import {spy} from 'sinon';
 import {closeElement, comment, content, openElement, text, updateElement, voidElement} from '../../src/runtime';

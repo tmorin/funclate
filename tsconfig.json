@@ -2,7 +2,6 @@
   "compilerOptions": {
     "module": "commonjs",
     "outDir": "lib",
-    "allowJs": true,
     "lib": [
       "ES5",
       "ES6",

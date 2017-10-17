@@ -1,4 +1,4 @@
-import {Funclate, Map, RenderFactory, RenderFunction} from './parser/model';
+import {Funclate, Map, RenderFactory, RenderFunction} from './model';
 import {Context, ElementOptions, NodeFactory, ParentElement, RootElement} from './runtime/model';
 import {findNodeFromKey, fromArrayToObject, sanitize, updateAttributes, updateProperties} from './runtime/utils';
 

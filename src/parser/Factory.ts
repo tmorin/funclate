@@ -1,9 +1,10 @@
-import {ParserOptions, RenderFactory} from './model';
+import {RenderFactory} from '../model';
+import {ParserOptions} from './ParserOptions';
 import {Statements} from './Statements';
 
 export class Factory {
 
-    private options: { [k: string]: any };
+    private options: ParserOptions;
 
     private render: Statements;
 

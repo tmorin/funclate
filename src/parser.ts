@@ -1,22 +1,33 @@
 import {Parser} from 'htmlparser2';
+import {RenderFactory} from './model';
 import {Factory} from './parser/Factory';
-import {FcCallTag} from './parser/FcCallTag';
-import {FcContentTag} from './parser/FcContentTag';
-import {FcEachTag} from './parser/FcEachTag';
-import {FcElseIfTag} from './parser/FcElseIfTag';
-import {FcElseTag} from './parser/FcElseTag';
-import {FcIfTag} from './parser/FcIfTag';
-import {ParserOptions, RenderFactory, Tags} from './parser/model';
-import {Statements} from './parser/Statements';
-import {assign, interpolate, toCamelCase} from './parser/utils';
+import {FcAttHandler} from './parser/FcAttributeHandler';
+import {FcCallTagHandler} from './parser/FcCallTagHandler';
+import {FcContentAttHandler} from './parser/FcContentAttributeHandler';
+import {FcContentTagHandler} from './parser/FcContentTagHandler';
+import {FcEachTagHandler} from './parser/FcEachTagHandler';
+import {FcElseIfTagHandler} from './parser/FcElseIfTagHandler';
+import {FcElseTagHandler} from './parser/FcElseTagHandler';
+import {FcIfTagHandler} from './parser/FcIfTagHandler';
+import {FcKeyAttHandler} from './parser/FcKeyAttributeHandler';
+import {FcTagHandler} from './parser/FcTagHandler';
+import {AttHandlers, ParserOptions, TagHandlers} from './parser/ParserOptions';
+import {assign, interpolate} from './parser/utils';
 
-const TAGS: Tags = {
-    'fc-each': new FcEachTag(),
-    'fc-if': new FcIfTag(),
-    'fc-else': new FcElseTag(),
-    'fc-else-if': new FcElseIfTag(),
-    'fc-content': new FcContentTag(),
-    'fc-call': new FcCallTag()
+const DEFAULT_TAG_HANDLERS: TagHandlers = {
+    '*': new FcTagHandler(),
+    'fc-each': new FcEachTagHandler(),
+    'fc-if': new FcIfTagHandler(),
+    'fc-else': new FcElseTagHandler(),
+    'fc-else-if': new FcElseIfTagHandler(),
+    'fc-content': new FcContentTagHandler(),
+    'fc-call': new FcCallTagHandler()
+};
+
+const DEFAULT_ATT_HANDLERS: AttHandlers = {
+    '*': new FcAttHandler(),
+    'fc-key': new FcKeyAttHandler(),
+    'fc-content': new FcContentAttHandler()
 };
 
 const DEFAULT_OPTIONS: ParserOptions = {
@@ -30,68 +41,34 @@ const DEFAULT_OPTIONS: ParserOptions = {
         'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
         'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
     ],
-    tags: TAGS
+    tagHandlers: DEFAULT_TAG_HANDLERS,
+    attHandlers: DEFAULT_ATT_HANDLERS
 };
 
 /**
  * Parse an HTML template and return the factory of the underlying render function.
- * @param html the HTML content to parse
- * @param [options] the options
- * @return the factory function as Function or string.
+ * @param {string} html the HTML content to parse
+ * @param {ParserOptions} options the options
+ * @return {string | RenderFactory} the factory function as Function or string.
  */
 export function parse(html: string, options: ParserOptions = {}): string | RenderFactory {
     options = assign({}, DEFAULT_OPTIONS, options);
+    options.tagHandlers = assign({}, DEFAULT_TAG_HANDLERS, options.tagHandlers) as TagHandlers;
+    options.attHandlers = assign({}, DEFAULT_ATT_HANDLERS, options.attHandlers) as AttHandlers;
 
     const factory = new Factory(options);
     const p = new Parser({
         onopentag(name, attrs) {
-            if (options.tags[name]) {
-                options.tags[name].startTag(factory, name, attrs);
-            } else {
-                const fcAttrs = Statements.get(options);
-                const fcProps = Statements.get(options);
-                const fcOpts = Statements.get(options);
-                Object.keys(attrs).forEach((attName) => {
-                    if (attName === 'fc-key') {
-                        fcOpts.append(`'key', ${interpolate(attrs[attName], options)}`);
-                    } else if (attName === 'fc-content') {
-                        fcOpts.append(`'content', true`);
-                    } else {
-                        let targetName = attName;
-                        let destination = fcAttrs;
-
-                        const index = attName.indexOf(options.propNamePrefix);
-                        if (index > -1) {
-                            targetName = toCamelCase(attName.substring(index + 1));
-                            destination = fcProps;
-                        }
-
-                        destination.append(`'${targetName}', ${interpolate(attrs[attName], options)}`);
-                    }
-                });
-                if (options.selfClosingElements.indexOf(name) > -1) {
-                    factory.appendVoidElement(
-                        name,
-                        `[${fcAttrs.join(',')}]`,
-                        `[${fcProps.join(',')}]`,
-                        `[${fcOpts.join(',')}]`
-                    );
-                } else {
-                    factory.appendOpenElement(
-                        name,
-                        `[${fcAttrs.join(',')}]`,
-                        `[${fcProps.join(',')}]`,
-                        `[${fcOpts.join(',')}]`
-                    );
-                }
+            const tagHandler = options.tagHandlers[name] ? options.tagHandlers[name] : options.tagHandlers['*'];
+            if (tagHandler) {
+                tagHandler.startTag(factory, name, attrs, options);
             }
         },
 
         onclosetag(name) {
-            if (options.tags[name]) {
-                options.tags[name].endTag(factory, name);
-            } else if (options.selfClosingElements.indexOf(name) < 0) {
-                factory.appendCloseElement();
+            const tagHandler = options.tagHandlers[name] ? options.tagHandlers[name] : options.tagHandlers['*'];
+            if (tagHandler) {
+                tagHandler.endTag(factory, name, options);
             }
         },
 
