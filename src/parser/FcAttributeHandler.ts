@@ -13,14 +13,16 @@ export class FcAttHandler {
 
         let targetName = name;
         let destination = fcAttrs;
+        let interpolatedValue = interpolate(value, options);
 
         const index = name.indexOf(options.propNamePrefix);
         if (index > -1) {
             targetName = toCamelCase(name.substring(index + 1));
             destination = fcProps;
+            destination.append(`'${targetName}', ${interpolatedValue || 'undefined'}`);
+        } else {
+            destination.append(`'${targetName}', ${interpolatedValue || '\'\''}`);
         }
-
-        destination.append(`'${targetName}', ${interpolate(value, options)}`);
     }
 
 }
