@@ -1,9 +1,8 @@
 # funclate
 
-[![Circle CI](https://circleci.com/gh/tmorin/funclate/tree/master.svg?style=svg)](https://circleci.com/gh/tmorin/funclate/tree/master)
-[![Dependency Status](https://david-dm.org/tmorin/funclate.svg)](https://david-dm.org/tmorin/funclate)
-[![devDependency Status](https://david-dm.org/tmorin/funclate/dev-status.svg)](https://david-dm.org/tmorin/funclate?type=dev)
-[![Coverage Status](https://coveralls.io/repos/github/tmorin/funclate/badge.svg?branch=master)](https://coveralls.io/github/tmorin/funclate?branch=master)
+[![npm version](https://badge.fury.io/js/%40tmorin%2Ffunclate.svg)](https://badge.fury.io/js/%40tmorin%2Ffunclate)
+[![Continous Integration - Build](https://github.com/tmorin/funclate/actions/workflows/ci-build.yaml/badge.svg)](https://github.com/tmorin/funclate/actions/workflows/ci-build.yaml)
+[![api](https://img.shields.io/badge/-api-informational.svg)](https://tmorin.github.io/funclate)
 
 > **func**tion + temp**late** = **funclate**
 
