@@ -1,6 +1,6 @@
 {
   "name": "@tmorin/funclate",
-  "version": "0.3.0-alpha.1",
+  "version": "0.3.0-alpha.2",
   "description": "A 'build time' HTML parser + a 'runtime' template engine to patch the DOM incrementally.",
   "keywords": [
     "custom",
