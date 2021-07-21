@@ -1,5 +1,4 @@
 import {expect} from 'chai';
-import {spy} from 'sinon';
 import {closeElement, comment, content, openElement, text, updateElement, voidElement} from '../../src/runtime';
 
 const toArray = v => Array.prototype.slice.call(v);
@@ -188,11 +187,8 @@ describe('updateElement()', () => {
             openElement('button', ['is', 'my-button']);
             closeElement();
         };
-        let spiedCreateElement = spy(el.ownerDocument, 'createElement');
         updateElement(render, el);
         expect(el.innerHTML, '1').to.be.eq(`<button is="my-button"></button>`);
-        expect(spiedCreateElement.calledWith('button', 'my-button'), '1 createElementStub').to.be.true;
-        spiedCreateElement.restore();
     });
 
     it('should create void element', () => {

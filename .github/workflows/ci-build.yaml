@@ -1,0 +1,40 @@
+name: Continous Integration - Build
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@tmorin'
+      - name: Udpate apt
+        run: sudo apt-get update
+      - name: Install apt dependencies
+        run: sudo apt-get install -y xvfb firefox chromium-browser
+      - name: Install dependencies
+        run: npm ci
+      - name: Build package
+        run: npm run build
+      - name: Test package
+        run: npm test
+        env:
+          CHROME_BIN: '/usr/bin/chromium-browser'
+      - name: Build typedoc
+        run: npm run doc
+      - name: Publish package
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        run: npm publish --tag latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish documentation
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public

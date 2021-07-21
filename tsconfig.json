@@ -1,16 +1,10 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "outDir": "lib",
-    "lib": [
-      "ES5",
-      "ES6",
-      "DOM",
-      "ScriptHost"
+  "extends": "./tsconfig.base.json",
+  "typedocOptions": {
+    "entryPoints": [
+      "./src/runtime.ts"
     ],
-    "target": "ES5"
-  },
-  "include": [
-    "src/**/*"
-  ]
+    "readme": "none",
+    "out": "public"
+  }
 }

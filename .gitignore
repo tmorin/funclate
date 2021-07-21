@@ -1,8 +1,6 @@
-/npm-debug.log
-/dist
 /.idea
-/doc
+/.tmp
+/public
+/dist
 /lib
-/.nyc_output
-/coverage
 /node_modules

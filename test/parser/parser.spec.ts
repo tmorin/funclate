@@ -1,12 +1,15 @@
-/*jshint -W030 */
 import {expect} from 'chai';
 import {RenderFactory} from '../../src/model';
 import {parse} from '../../src/parser';
 import {createThenUpdate} from '../../src/runtime';
+import {JSDOM} from "jsdom";
 
 describe('parse()', () => {
+    let document;
     let el;
     beforeEach(() => {
+        const dom = new JSDOM(`<!DOCTYPE html>`);
+        document = dom.window.document;
         if (el) {
             el.parentNode.removeChild(el);
         }

@@ -2,10 +2,14 @@ import {expect} from 'chai';
 import {parse} from '../../src/parser';
 import * as funclate from '../../src/runtime';
 import {updateElement} from '../../src/runtime';
+import {JSDOM} from "jsdom";
 
 describe('FcIf', () => {
+    let document;
     let el;
     beforeEach(() => {
+        const dom = new JSDOM(`<!DOCTYPE html>`);
+        document = dom.window.document;
         if (el) {
             el.parentNode.removeChild(el);
         }
