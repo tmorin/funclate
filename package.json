@@ -1,6 +1,6 @@
 {
-  "name": "funclate",
-  "version": "0.3.0-alpha.0",
+  "name": "@tmorin/funclate",
+  "version": "0.3.0-alpha.1",
   "description": "A 'build time' HTML parser + a 'runtime' template engine to patch the DOM incrementally.",
   "keywords": [
     "custom",
@@ -41,6 +41,9 @@
   "author": {
     "name": "Thibault Morin",
     "url": "https://tmorin.github.io"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT",
   "bugs": {

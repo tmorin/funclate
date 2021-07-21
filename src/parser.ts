@@ -10,6 +10,7 @@ import {FcElseIfTagHandler} from './parser/FcElseIfTagHandler';
 import {FcElseTagHandler} from './parser/FcElseTagHandler';
 import {FcIfTagHandler} from './parser/FcIfTagHandler';
 import {FcKeyAttHandler} from './parser/FcKeyAttributeHandler';
+import {FcSkipChildrenHandler} from "./parser/FcSkipChildrenHandler";
 import {FcTagHandler} from './parser/FcTagHandler';
 import {AttHandlers, ParserOptions, TagHandlers} from './parser/ParserOptions';
 import {assign, interpolate} from './parser/utils';
@@ -27,7 +28,8 @@ const DEFAULT_TAG_HANDLERS: TagHandlers = {
 const DEFAULT_ATT_HANDLERS: AttHandlers = {
     '*': new FcAttHandler(),
     'fc-key': new FcKeyAttHandler(),
-    'fc-content': new FcContentAttHandler()
+    'fc-content': new FcContentAttHandler(),
+    'fc-skip': new FcSkipChildrenHandler(),
 };
 
 const DEFAULT_OPTIONS: ParserOptions = {
