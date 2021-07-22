@@ -15,9 +15,9 @@
     "browserify",
     "browserify-plugin"
   ],
-  "main": "lib/runtime.js",
-  "types": "lib/runtime.d.ts",
-  "unpkg": "dist/ceb.min.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "unpkg": "dist/funclate.min.js",
   "scripts": {
     "alpha": "npm run build && standard-version --skip.changelog --skip.tag --prerelease alpha",
     "alpha:publish": "git push --all && npm publish --tag canary",
@@ -29,10 +29,8 @@
     "doc": "typedoc",
     "release": "npm run build && standard-version",
     "release:publish": "git push --tags && git push --all",
-    "test": "npm run test:node && npm run test:web",
-    "test:node": "mocha",
-    "test:web": "karma start --single-run --no-auto-watch --browsers FirefoxHeadless,ChromeHeadless",
-    "test:web:watch": "karma start --no-single-run --auto-watch --browsers Firefox"
+    "test": "karma start --single-run --no-auto-watch --browsers FirefoxHeadless,ChromeHeadless",
+    "test:watch": "karma start --no-single-run --auto-watch --browsers Firefox"
   },
   "repository": {
     "type": "git",
@@ -51,19 +49,13 @@
   },
   "homepage": "https://tmorin.github.io/funclate",
   "dependencies": {
-    "htmlparser2": "^6.1.0",
-    "loader-utils": "^2.0.0"
+    "sax": "^1.2.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.8",
-    "@babel/preset-env": "^7.14.8",
     "@types/chai": "^4.2.21",
-    "@types/jsdom": "^16.2.13",
     "@types/mocha": "^8.2.3",
-    "assert": "^2.0.0",
-    "babel-loader": "^8.2.2",
+    "@types/sax": "^1.2.3",
     "chai": "^4.3.4",
-    "jsdom": "^16.6.0",
     "karma": "^6.3.4",
     "karma-chrome-launcher": "^3.1.0",
     "karma-cli": "^2.0.0",
@@ -72,16 +64,14 @@
     "karma-mocha": "^2.0.1",
     "karma-webpack": "^5.0.0",
     "mocha": "^9.0.2",
-    "process": "^0.11.10",
     "puppeteer": "^10.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^11.1.1",
     "standard-version": "^9.3.1",
+    "stream-browserify": "^3.0.0",
     "ts-loader": "^9.2.3",
     "ts-node": "^10.1.0",
     "typedoc": "^0.21.4",
     "typescript": "^4.3.5",
-    "util": "^0.12.4",
     "webpack": "^5.45.1",
     "webpack-cli": "^4.7.2",
     "webpack-merge": "^5.8.0"

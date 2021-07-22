@@ -9,9 +9,7 @@ module.exports = merge(common, {
     },
     resolve: {
         fallback: {
-            util: require.resolve('util'),
-            assert: require.resolve('assert'),
-            process: require.resolve('process'),
+            "stream": require.resolve("stream-browserify")
         }
     }
 });

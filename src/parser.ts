@@ -1,95 +1,166 @@
-import {Parser} from 'htmlparser2';
-import {RenderFactory} from './model';
-import {Factory} from './parser/Factory';
-import {FcAttHandler} from './parser/FcAttributeHandler';
-import {FcCallTagHandler} from './parser/FcCallTagHandler';
-import {FcContentAttHandler} from './parser/FcContentAttributeHandler';
-import {FcContentTagHandler} from './parser/FcContentTagHandler';
-import {FcEachTagHandler} from './parser/FcEachTagHandler';
-import {FcElseIfTagHandler} from './parser/FcElseIfTagHandler';
-import {FcElseTagHandler} from './parser/FcElseTagHandler';
-import {FcIfTagHandler} from './parser/FcIfTagHandler';
-import {FcKeyAttHandler} from './parser/FcKeyAttributeHandler';
-import {FcSkipChildrenHandler} from "./parser/FcSkipChildrenHandler";
-import {FcTagHandler} from './parser/FcTagHandler';
-import {AttHandlers, ParserOptions, TagHandlers} from './parser/ParserOptions';
-import {assign, interpolate} from './parser/utils';
+import {SAXParser, Tag} from "sax";
+import {Attributes, Engine, Options, Parameters, Properties, UpdateElementParameters} from "./engine";
 
-const DEFAULT_TAG_HANDLERS: TagHandlers = {
-    '*': new FcTagHandler(),
-    'fc-each': new FcEachTagHandler(),
-    'fc-if': new FcIfTagHandler(),
-    'fc-else': new FcElseTagHandler(),
-    'fc-else-if': new FcElseIfTagHandler(),
-    'fc-content': new FcContentTagHandler(),
-    'fc-call': new FcCallTagHandler()
-};
+const PATTERN_FC_VALUE_INDEX = /{{fc_value_index:([0-9]+)}}/gm
+const PREFIX_FC_VALUE_INDEX = "{{fc_value_index:"
+const SUFFIX_FC_VALUE_INDEX = "}}"
+const PREFIX_FC_PROPERTY = "p:"
+const PREFIX_FC_OPTION = "o:"
 
-const DEFAULT_ATT_HANDLERS: AttHandlers = {
-    '*': new FcAttHandler(),
-    'fc-key': new FcKeyAttHandler(),
-    'fc-content': new FcContentAttHandler(),
-    'fc-skip': new FcSkipChildrenHandler(),
-};
+function toCamelCase(string = '') {
+    return string.toLowerCase()
+        .split('-')
+        .map((part, index) => index ? part.charAt(0).toUpperCase() + part.slice(1) : part).join('');
+}
 
-const DEFAULT_OPTIONS: ParserOptions = {
-    output: 'function',
-    pretty: false,
-    interpolation: /\{\{([\s\S]+?)\}\}/gm,
-    propNamePrefix: '#',
-    elVarName: 'el',
-    ctxVarName: 'ctx',
-    selfClosingElements: [
-        'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-        'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
-    ],
-    tagHandlers: DEFAULT_TAG_HANDLERS,
-    attHandlers: DEFAULT_ATT_HANDLERS
-};
+function fromStringToValues(string: string = "", args: Array<any> = []): Array<any> {
+    const values: Array<any> = []
+    const r = new RegExp(PATTERN_FC_VALUE_INDEX)
+    let cursorFrom = 0
+    let cursorTo = 0
+    let match: RegExpExecArray;
+    while (match = r.exec(string)) {
+        cursorTo = match.index
+        const textValue = string.substring(cursorFrom, cursorTo)
+        if (textValue) {
+            values.push(textValue)
+        }
+        const argIndex = match[1]
+        const argValue = args[argIndex]
+        values.push(argValue)
+        cursorFrom = cursorTo + match[0].length
+    }
+    const finalTextValue = string.substring(cursorFrom)
+    if (finalTextValue) {
+        values.push(finalTextValue)
+    }
+    return values
+}
+
+function fromValuesToOperations(values: Array<any>, accumulator: (operations: Operations, value: any) => void): Operations {
+    const operations = new Operations()
+    values.forEach(value => {
+        if (value instanceof Operations) {
+            operations.push(value)
+        } else if (Array.isArray(value)) {
+            for (let item of value) {
+                if (item instanceof Operations) {
+                    operations.push(item)
+                } else {
+                    accumulator(operations, item)
+                }
+            }
+        } else {
+            accumulator(operations, value)
+        }
+    })
+    return operations
+}
+
+function generateParameters(tagAttrs: { [key: string]: string } = {}, args: Array<any>): Partial<Parameters> {
+    const attributes: Attributes = []
+    const properties: Properties = []
+    const options: Options = {}
+    const entries: Array<[string, string]> = Object.entries(tagAttrs)
+    entries.forEach(([attrName, attrValue]) => {
+        const values = fromStringToValues(attrValue, args)
+        const value = values.length === 1 ? values[0] : values.join("")
+        const isProperty = attrName.startsWith(PREFIX_FC_PROPERTY)
+        const isOption = attrName.startsWith(PREFIX_FC_OPTION)
+        if (isProperty) {
+            const propName = toCamelCase(attrName.replace(PREFIX_FC_PROPERTY, ""))
+            properties.push([propName, value])
+        } else if (isOption) {
+            const optName = toCamelCase(attrName.replace(PREFIX_FC_OPTION, ""))
+            options[optName] = value === "" || value === attrName ? true : value
+        } else {
+            const sanitizedAttrValue = value === attrName ? "" : value
+            attributes.push([attrName, sanitizedAttrValue])
+        }
+    })
+    return {attributes, properties, options}
+}
+
+type Operation = (engine: Engine) => void
 
 /**
- * Parse an HTML template and return the factory of the underlying render function.
- * @param {string} html the HTML content to parse
- * @param {ParserOptions} options the options
- * @return {string | RenderFactory} the factory function as Function or string.
+ * A template updates a DOM element from a set of operations.
+ * The operations are discovered during the parsing of a _funclate literal_ statement, c.f. {@link funclate}.
  */
-export function parse(html: string, options: ParserOptions = {}): string | RenderFactory {
-    options = assign({}, DEFAULT_OPTIONS, options);
-    options.tagHandlers = assign({}, DEFAULT_TAG_HANDLERS, options.tagHandlers) as TagHandlers;
-    options.attHandlers = assign({}, DEFAULT_ATT_HANDLERS, options.attHandlers) as AttHandlers;
+export interface Template {
+    /**
+     * Update the content of an element.
+     * @param element the element where render the template
+     * @param parameters the parameters of the rendering
+     */
+    render(element: HTMLElement, parameters?: UpdateElementParameters): void
+}
 
-    const factory = new Factory(options);
-    const p = new Parser({
-        onopentag(name, attrs) {
-            const tagHandler = options.tagHandlers[name] ? options.tagHandlers[name] : options.tagHandlers['*'];
-            if (tagHandler) {
-                tagHandler.startTag(factory, name, attrs, options);
-            }
-        },
+class Operations implements Template {
+    constructor(
+        private readonly operations: Array<Operation> = []
+    ) {
+    }
 
-        onclosetag(name) {
-            const tagHandler = options.tagHandlers[name] ? options.tagHandlers[name] : options.tagHandlers['*'];
-            if (tagHandler) {
-                tagHandler.endTag(factory, name, options);
-            }
-        },
-
-        ontext(text) {
-            factory.appendText(interpolate(text, options));
-        },
-
-        oncomment(text) {
-            factory.appendComment(interpolate(text, options));
+    push(value: Operations | Operation) {
+        if (value instanceof Operations) {
+            value.operations.forEach(o => this.operations.push(o))
+        } else {
+            this.operations.push(value)
         }
-    }, {
-        xmlMode: false,
-        decodeEntities: false,
-        lowerCaseTags: true,
-        lowerCaseAttributeNames: true,
-        recognizeSelfClosing: true,
-        recognizeCDATA: true
-    });
+    }
 
-    p.parseComplete(html);
-    return factory.toFunction();
+    render(element: HTMLElement, parameters?: UpdateElementParameters) {
+        Engine.updateElement(element, engine => {
+            this.operations.forEach(operation => operation(engine))
+        }, parameters)
+    }
+}
+
+/**
+ * This function is a [tag function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates)
+ * which converts a [literal statement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literal)
+ * to a {@link Template}.
+ * The template can then be used to update the DOM.
+ * @param strings the strings
+ * @param args the arguments
+ * @example Render a simple greeting
+ * ```typescript
+ * import {funclate, Template} from 'funclate'
+ * const name = "World"
+ * const template : Template = funclate`<p>Hello, ${name}!</p>`
+ * template.render(document.body)
+ * ```
+ */
+export function funclate(strings: TemplateStringsArray, ...args: Array<any>): Template {
+    const operations = new Operations()
+
+    const parser = new SAXParser(false, {
+        lowercase: true, xmlns: false
+    });
+    parser.onopentag = (tag: Tag) => {
+        const {attributes, properties, options} = generateParameters(tag.attributes, args)
+        operations.push(engine => engine.openElement(tag.name, {attributes, properties, options}))
+    }
+    parser.onclosetag = (tag) => {
+        operations.push(engine => engine.closeElement())
+
+    }
+    parser.ontext = (nodeValue) => {
+        const values = fromStringToValues(nodeValue, args);
+        operations.push(fromValuesToOperations(values, (operations1, value) => operations1.push(engine => engine.text(value))))
+    }
+    parser.oncomment = (nodeValue) => {
+        const values = fromStringToValues(nodeValue, args);
+        operations.push(fromValuesToOperations(values, (operations1, value) => operations1.push(engine => engine.comment(value))))
+    }
+    strings.forEach((text, index) => {
+        parser.write(text)
+        if (typeof args[index] !== "undefined") {
+            parser.write(`${PREFIX_FC_VALUE_INDEX}${index}${SUFFIX_FC_VALUE_INDEX}`)
+        }
+    })
+    parser.close()
+
+    return operations
 }

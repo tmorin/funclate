@@ -2,9 +2,10 @@
   "extends": "./tsconfig.base.json",
   "typedocOptions": {
     "entryPoints": [
-      "./src/runtime.ts"
+      "./src/index.ts"
     ],
-    "readme": "none",
-    "out": "public"
+//    "readme": "none",
+    "out": "public",
+    "excludePrivate": true
   }
 }

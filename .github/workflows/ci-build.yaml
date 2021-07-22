@@ -19,12 +19,12 @@ jobs:
         run: sudo apt-get install -y xvfb firefox chromium-browser
       - name: Install dependencies
         run: npm ci
-      - name: Build package
-        run: npm run build
       - name: Test package
         run: npm test
         env:
           CHROME_BIN: '/usr/bin/chromium-browser'
+      - name: Build package
+        run: npm run build
       - name: Build typedoc
         run: npm run doc
       - name: Publish package

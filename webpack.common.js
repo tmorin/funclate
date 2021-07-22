@@ -1,7 +1,7 @@
 const path = require("path");
 
 module.exports = {
-    entry: path.resolve(__dirname, 'src/runtime.ts'),
+    entry: path.resolve(__dirname, 'src/index.ts'),
     module: {
         rules: [
             {
@@ -20,7 +20,7 @@ module.exports = {
     },
     output: {
         library: "funclate",
-        libraryTarget: "umd",
+        libraryTarget: "umd2",
         path: path.resolve(__dirname)
     }
 };
