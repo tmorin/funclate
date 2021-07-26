@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import {Attribute, parse} from "../src/parser2"
+import {Attribute, parse} from "../src/parser"
 
 type ParseEvent = {
     name: 'text' | 'comment' | 'openTag' | 'closeTag',
@@ -37,7 +37,7 @@ function executeParse(html: string): Array<ParseEvent> {
     return stack
 }
 
-describe.only("parser", function () {
+describe("parser", function () {
     let i
     let el
     beforeEach(() => {
@@ -211,6 +211,34 @@ describe.only("parser", function () {
         expect(parseResult[i].detail.attributes[3].name).eq("required")
         expect(parseResult[i].detail.attributes[3].value).eq("required")
         expect(parseResult[i].detail.selfClosing).eq(false)
+    })
+    it("should parse special attributes", function () {
+        const html = `<div class="classA classB" id=idA o:key='keyA' required="" disabled="disabled" o:skip></div>`
+        const attributes = executeParse(html)[0].detail.attributes
+        // class="classA classB"
+        expect(attributes[i].name).eq("class")
+        expect(attributes[i].value).eq("classA classB")
+        i++
+        // id=idA
+        expect(attributes[i].name).eq("id")
+        expect(attributes[i].value).eq("idA")
+        i++
+        // o:key
+        expect(attributes[i].name).eq("o:key")
+        expect(attributes[i].value).eq("keyA")
+        i++
+        // required=""
+        expect(attributes[i].name).eq("required")
+        expect(attributes[i].value).eq("")
+        i++
+        // disabled="disabled"
+        expect(attributes[i].name).eq("disabled")
+        expect(attributes[i].value).eq("disabled")
+        i++
+        // o:skip
+        expect(attributes[i].name).eq("o:skip")
+        expect(attributes[i].value).eq("")
+        i++
     })
     it("should parse attributes", function () {
         const html = `<input type="number" disabled value="1" />`

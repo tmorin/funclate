@@ -48,13 +48,9 @@
     "url": "https://github.com/tmorin/funclate/issues"
   },
   "homepage": "https://tmorin.github.io/funclate",
-  "dependencies": {
-    "sax": "^1.2.4"
-  },
   "devDependencies": {
     "@types/chai": "^4.2.21",
     "@types/mocha": "^8.2.3",
-    "@types/sax": "^1.2.3",
     "chai": "^4.3.4",
     "karma": "^6.3.4",
     "karma-chrome-launcher": "^3.1.0",

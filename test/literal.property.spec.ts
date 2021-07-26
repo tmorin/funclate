@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {funclate} from "../src";
 
-describe("parser/property", function () {
+describe("literal/property", function () {
     let el
     beforeEach(() => {
         if (el) {

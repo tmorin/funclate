@@ -1,166 +1,181 @@
-import {SAXParser, Tag} from "sax";
-import {Attributes, Engine, Options, Parameters, Properties, UpdateElementParameters} from "./engine";
+// based on HTML Parser By John Resig (ejohn.org)
+// https://johnresig.com/files/htmlparser.js
 
-const PATTERN_FC_VALUE_INDEX = /{{fc_value_index:([0-9]+)}}/gm
-const PREFIX_FC_VALUE_INDEX = "{{fc_value_index:"
-const SUFFIX_FC_VALUE_INDEX = "}}"
-const PREFIX_FC_PROPERTY = "p:"
-const PREFIX_FC_OPTION = "o:"
-
-function toCamelCase(string = '') {
-    return string.toLowerCase()
-        .split('-')
-        .map((part, index) => index ? part.charAt(0).toUpperCase() + part.slice(1) : part).join('');
+function toMap(str: string) {
+    const obj = {}
+    const items = str.split(",")
+    for (let i = 0; i < items.length; i++) {
+        obj[items[i]] = true
+    }
+    return obj
 }
 
-function fromStringToValues(string: string = "", args: Array<any> = []): Array<any> {
-    const values: Array<any> = []
-    const r = new RegExp(PATTERN_FC_VALUE_INDEX)
-    let cursorFrom = 0
-    let cursorTo = 0
-    let match: RegExpExecArray;
-    while (match = r.exec(string)) {
-        cursorTo = match.index
-        const textValue = string.substring(cursorFrom, cursorTo)
-        if (textValue) {
-            values.push(textValue)
-        }
-        const argIndex = match[1]
-        const argValue = args[argIndex]
-        values.push(argValue)
-        cursorFrom = cursorTo + match[0].length
-    }
-    const finalTextValue = string.substring(cursorFrom)
-    if (finalTextValue) {
-        values.push(finalTextValue)
-    }
-    return values
+// Regular Expressions for parsing tags and attributes
+const startTag = /^<([-:A-Za-z0-9_]+)((?:\s+[\w:]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/
+const endTag = /^<\/([-:A-Za-z0-9_]+)[^>]*>/
+const attr =     /([-:A-Za-z0-9_]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+)))?/g
+
+// 2021-07-26 - https://developer.mozilla.org/en-US/docs/Glossary/empty_element
+const empty = toMap("area,base,br,col,embed,hr,img,input,keygen,link,meta,param,source,track,wbr")
+
+// 2021-07-26 - https://developer.mozilla.org/en-US/docs/Glossary/empty_element
+const inline = toMap("a,abbr,acronym,b,bdi,bdo,big,br,button,canvas,cite,code,data,datalist,del,dfn,em,embed,i,iframe,img,input,ins,kbd,label,map,mark,meter,noscript,object,output,picture,progress,q,ruby,s,samp,script,select,slot,small,span,strong,sub,sup,svg,template,textarea,time,u,tt,var,video,wbr")
+
+// Special Elements (can contain anything)
+const special = toMap("script,style")
+
+export type SaxHandler = {
+    openTag?(name: string, attributes: Array<Attribute>, selfClosing: boolean)
+    closeTag?(name: string)
+    comment?(data: string)
+    text?(data: string)
 }
 
-function fromValuesToOperations(values: Array<any>, accumulator: (operations: Operations, value: any) => void): Operations {
-    const operations = new Operations()
-    values.forEach(value => {
-        if (value instanceof Operations) {
-            operations.push(value)
-        } else if (Array.isArray(value)) {
-            for (let item of value) {
-                if (item instanceof Operations) {
-                    operations.push(item)
-                } else {
-                    accumulator(operations, item)
+export type Attribute = {
+    name: string
+    value: string
+}
+
+export function parse(html: string, handler: SaxHandler) {
+    let index: number
+    let chars: boolean
+    let match: RegExpMatchArray
+    let stack: Array<string> = []
+    let last = html
+    stack["last"] = () => this[this.length - 1]
+
+    while (html) {
+        chars = true
+
+        // Make sure we're not in a script or style element
+        if (!stack["last"]() || !special[stack["last"]()]) {
+
+            // Comment
+            if (html.indexOf("<!--") == 0) {
+                index = html.indexOf("-->")
+                if (index >= 0) {
+                    if (handler.comment)
+                        handler.comment(html.substring(4, index))
+                    html = html.substring(index + 3)
+                    chars = false
+                }
+                // end tag
+            } else if (html.indexOf("</") == 0) {
+                match = html.match(endTag)
+                if (match) {
+                    html = html.substring(match[0].length)
+                    match[0].replace(endTag, parseEndTag)
+                    chars = false
+                }
+                // start tag
+            } else if (html.indexOf("<") == 0) {
+                match = html.match(startTag)
+                if (match) {
+                    html = html.substring(match[0].length)
+                    match[0].replace(startTag, parseStartTag)
+                    chars = false
                 }
             }
+
+            if (chars) {
+                index = html.indexOf("<")
+                const text = index < 0 ? html : html.substring(0, index)
+                html = index < 0 ? "" : html.substring(index)
+                if (handler.text) {
+                    handler.text(text)
+                }
+            }
+
         } else {
-            accumulator(operations, value)
+            html = html.replace(new RegExp("(.*)<\/" + stack["last"]() + "[^>]*>"), function (all, text) {
+                text = text.replace(/<!--(.*?)-->/g, "$1").replace(/<!\[CDATA\[(.*?)]]>/g, "$1")
+                if (handler.text) {
+                    handler.text(text)
+                }
+                return ""
+            })
+            parseEndTag("", stack["last"]())
         }
-    })
-    return operations
-}
 
-function generateParameters(tagAttrs: { [key: string]: string } = {}, args: Array<any>): Partial<Parameters> {
-    const attributes: Attributes = []
-    const properties: Properties = []
-    const options: Options = {}
-    const entries: Array<[string, string]> = Object.entries(tagAttrs)
-    entries.forEach(([attrName, attrValue]) => {
-        const values = fromStringToValues(attrValue, args)
-        const value = values.length === 1 ? values[0] : values.join("")
-        const isProperty = attrName.startsWith(PREFIX_FC_PROPERTY)
-        const isOption = attrName.startsWith(PREFIX_FC_OPTION)
-        if (isProperty) {
-            const propName = toCamelCase(attrName.replace(PREFIX_FC_PROPERTY, ""))
-            properties.push([propName, value])
-        } else if (isOption) {
-            const optName = toCamelCase(attrName.replace(PREFIX_FC_OPTION, ""))
-            options[optName] = value === "" || value === attrName ? true : value
+        if (html == last) {
+            throw "Parse Error: " + html
+        }
+        last = html
+    }
+
+    // Clean up any remaining tags
+    parseEndTag()
+
+    function parseStartTag(tag: string, tagName: string, rest: string, selfClosing: boolean) {
+        tagName = tagName.toLowerCase()
+
+        if (!empty[tagName] && !selfClosing) {
+            while (stack["last"]() && inline[stack["last"]()]) {
+                parseEndTag("", stack["last"]())
+            }
+        }
+
+        if (stack["last"]() == tagName) {
+            parseEndTag("", tagName)
+        }
+
+        selfClosing = empty[tagName] || !!selfClosing
+
+        if (!selfClosing) {
+            stack.push(tagName)
+        }
+
+        if (handler.openTag) {
+            const attrs: Array<Attribute> = []
+            rest.replace(attr, function (match, name) {
+                const value = arguments[2]
+                    ? arguments[2]
+                    : arguments[3]
+                        ? arguments[3]
+                        : arguments[4]
+                            ? arguments[4]
+                            : ""
+                attrs.push({
+                    name: name,
+                    value: value,
+                })
+                return ""
+            })
+
+            if (handler.openTag)
+                handler.openTag(tagName, attrs, selfClosing)
+        }
+
+        return ""
+    }
+
+    function parseEndTag(tag?, tagName?: string) {
+        let pos: number
+
+        if (!tagName) {
+            // If no tag name is provided, clean shop
+            pos = 0
         } else {
-            const sanitizedAttrValue = value === attrName ? "" : value
-            attributes.push([attrName, sanitizedAttrValue])
+            // Find the closest opened tag of the same type
+            for (pos = stack.length - 1; pos >= 0; pos--) {
+                if (stack[pos] == tagName) {
+                    break
+                }
+            }
         }
-    })
-    return {attributes, properties, options}
-}
 
-type Operation = (engine: Engine) => void
+        if (pos >= 0) {
+            // Close all the open elements, up the stack
+            for (let i = stack.length - 1; i >= pos; i--) {
+                if (handler.closeTag) {
+                    handler.closeTag(stack[i])
+                }
+            }
 
-/**
- * A template updates a DOM element from a set of operations.
- * The operations are discovered during the parsing of a _funclate literal_ statement, c.f. {@link funclate}.
- */
-export interface Template {
-    /**
-     * Update the content of an element.
-     * @param element the element where render the template
-     * @param parameters the parameters of the rendering
-     */
-    render(element: HTMLElement, parameters?: UpdateElementParameters): void
-}
-
-class Operations implements Template {
-    constructor(
-        private readonly operations: Array<Operation> = []
-    ) {
-    }
-
-    push(value: Operations | Operation) {
-        if (value instanceof Operations) {
-            value.operations.forEach(o => this.operations.push(o))
-        } else {
-            this.operations.push(value)
+            // Remove the open elements from the stack
+            stack.length = pos
         }
-    }
 
-    render(element: HTMLElement, parameters?: UpdateElementParameters) {
-        Engine.updateElement(element, engine => {
-            this.operations.forEach(operation => operation(engine))
-        }, parameters)
+        return ""
     }
-}
-
-/**
- * This function is a [tag function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates)
- * which converts a [literal statement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literal)
- * to a {@link Template}.
- * The template can then be used to update the DOM.
- * @param strings the strings
- * @param args the arguments
- * @example Render a simple greeting
- * ```typescript
- * import {funclate, Template} from 'funclate'
- * const name = "World"
- * const template : Template = funclate`<p>Hello, ${name}!</p>`
- * template.render(document.body)
- * ```
- */
-export function funclate(strings: TemplateStringsArray, ...args: Array<any>): Template {
-    const operations = new Operations()
-
-    const parser = new SAXParser(false, {
-        lowercase: true, xmlns: false
-    });
-    parser.onopentag = (tag: Tag) => {
-        const {attributes, properties, options} = generateParameters(tag.attributes, args)
-        operations.push(engine => engine.openElement(tag.name, {attributes, properties, options}))
-    }
-    parser.onclosetag = (tag) => {
-        operations.push(engine => engine.closeElement())
-
-    }
-    parser.ontext = (nodeValue) => {
-        const values = fromStringToValues(nodeValue, args);
-        operations.push(fromValuesToOperations(values, (operations1, value) => operations1.push(engine => engine.text(value))))
-    }
-    parser.oncomment = (nodeValue) => {
-        const values = fromStringToValues(nodeValue, args);
-        operations.push(fromValuesToOperations(values, (operations1, value) => operations1.push(engine => engine.comment(value))))
-    }
-    strings.forEach((text, index) => {
-        parser.write(text)
-        if (typeof args[index] !== "undefined") {
-            parser.write(`${PREFIX_FC_VALUE_INDEX}${index}${SUFFIX_FC_VALUE_INDEX}`)
-        }
-    })
-    parser.close()
-
-    return operations
 }
